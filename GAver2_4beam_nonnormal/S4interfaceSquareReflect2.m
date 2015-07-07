@@ -223,6 +223,10 @@ classdef S4interfaceSquareReflect2
                 system(['~/S4/build/S4 ', GAoptions.dir,scriptFilename]);
             end
             disp(['importing data: ', GAoptions.dir,dataFilename,'.E'])
+            if ~exist([GAoptions.dir,dataFilename,'.E'],'file') %If you can't find the file, ignore it and move on
+                intensityDist = [];
+                return;
+            end
             A = importdata([GAoptions.dir,dataFilename,'.E']); %Load data from script
             delete([GAoptions.dir,dataFilename,'.E']); %Clear data file for reuse
             delete([GAoptions.dir,dataFilename,'.H']);

@@ -10,15 +10,15 @@ function runGA_8beamTransmit_helix
 GAoptions.hostname = strtrim(hostname);
 
 %%%%% Genetic Algorithm Options %%%%%
-    GAoptions.popSize = 100;
-    GAoptions.numGen = 40;
+    GAoptions.popSize = 200;
+    GAoptions.numGen = 20;
     GAoptions.elite = 1;
     GAoptions.numRepetitions = 1; %Number of times to repeat the GA
     %Options for built-in GA algorithm:
     if strcmp(strtrim(hostname),'lotus-bud')
         UseParallelVar = true;
     elseif strcmp(strtrim(hostname),'berzerk')
-        UseParallelVar = 'never'
+        UseParallelVar = 'always'
     elseif strcmp(strtrim(hostname),'Daniel-netbook')
         UseParallelVar = 'never';
     end
@@ -98,7 +98,7 @@ GAoptions.hostname = strtrim(hostname);
     GAoptions.lattice = 'square';
     GAoptions.n_PR = 1.58; %refractive index of the photoresist (SU8)
     GAoptions.n_substrate = 1.5; %Glass slide as substrate
-    GAoptions.n_prism = 1.41; %PDMS prism
+    GAoptions.n_prism = 1.5; %PDMS prism
     %GAoptions.n_prism = 1; %no prism
     GAoptions.n_gratingVoid = 1; %assuming vacuum-SU8 grating
     %This assumes the 4-beam symmetric configuration
@@ -168,7 +168,7 @@ GAoptions.hostname = strtrim(hostname);
     targetStructureOptions.u = GAoptions.u;
     targetStructureOptions.v = GAoptions.v;
     targetStructureOptions.w = GAoptions.w;
-    targetStructureOptions.radb = GAoptions.period/6; %radius / distance of middle of helix to axis (um)
+    targetStructureOptions.radb = GAoptions.period/5; %radius / distance of middle of helix to axis (um)
     targetStructureOptions.radl = GAoptions.period/8; %radius of the wire (um)
     targetStructureOptions.relativeZ = GAoptions.C_over_A; %ratio of height to width of ellipsoidal 'pen'
     GAoptions.targetStructureOptions = targetStructureOptions;
