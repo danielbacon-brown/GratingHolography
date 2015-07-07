@@ -263,7 +263,7 @@ delete([scriptFilename]);
             %Assumes there is no metal deposition on sidewalls
 
             
-            save('lastgrating.mat', 'grating')
+%            save('lastgrating.mat', 'grating')
             
             
             setLayersScript = [ ...
