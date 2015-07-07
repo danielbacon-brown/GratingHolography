@@ -48,7 +48,10 @@ end
 
 %Do RCWA analysis with S4:
 intensityDist = GAoptions.S4interface.doRCWA(GAoptions,grating,incidentFieldParams);  %Note: this intensityDist is based on a hexagonal parallelogram
-
+if length(intensityDist)<1  %If the RCWA failed, return bad fitness and move on
+   fitness = 10;
+   return;
+end
 
 
 
