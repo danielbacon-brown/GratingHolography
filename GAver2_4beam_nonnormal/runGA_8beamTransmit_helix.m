@@ -11,7 +11,7 @@ GAoptions.hostname = strtrim(hostname);
 
 %%%%% Genetic Algorithm Options %%%%%
     GAoptions.popSize = 200;
-    GAoptions.numGen =40;
+    GAoptions.numGen = 40;
     GAoptions.elite = 1;
     GAoptions.numRepetitions = 1; %Number of times to repeat the GA
     %Options for built-in GA algorithm:
