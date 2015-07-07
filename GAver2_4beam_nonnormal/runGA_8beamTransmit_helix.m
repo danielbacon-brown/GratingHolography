@@ -47,6 +47,13 @@ GAoptions.hostname = strtrim(hostname);
     if strcmp(strtrim(hostname),'lotus-bud')
         GAoptions.dir = ['/home/daniel/GA_8beamReflect_helix_data/','GA_',datestr(now,'mm-dd-yy_HH:MM'),'_N',int2str(GAoptions.popSize), '/']  %directory that all this goes into
     elseif strcmp(strtrim(hostname),'berzerk')
+% figure
+% patched = patch(isosurface(padarray(intensityDist,[1,1,1],100),threshold));
+% set(patched,'FaceColor', [255 127 80]/256, 'EdgeColor', 'none');
+% view(3);
+% camlight
+% lighting gouraud
+% xlim([1 size(intensityDist,1)])
         GAoptions.dir = ['/home/danielbacon-brown/GA_8beamReflect_helix_data/','GA_',datestr(now,'mm-dd-yy_HH:MM'),'_N',int2str(GAoptions.popSize), '/']  %directory that all this goes into
     elseif strcmp(strtrim(hostname),'Daniel-netbook')
         GAoptions.dir = ['C:/Users/daniel/GA_8beamReflect_helix_data/','GA_ver2_',datestr(now,'mm-dd-yy_HH;MM'),'_N',int2str(GAoptions.popSize), '/']  %directory that all this goes into
