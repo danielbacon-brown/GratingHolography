@@ -104,7 +104,7 @@ if exist('doPlots','var') %Plot simulated structure
     
     
     figure
-    hist(reshape(intensityDist,1,[]),100)
+    hist(reshape(intensityDist,1,[]),100,
     
     
     %CALCULATE REPEAT CELLS

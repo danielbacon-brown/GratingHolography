@@ -10,7 +10,7 @@ function runGA_8beamTransmit_helix
 GAoptions.hostname = strtrim(hostname);
 
 %%%%% Genetic Algorithm Options %%%%%
-    GAoptions.popSize = 200;
+    GAoptions.popSize = 100;
     GAoptions.numGen = 40;
     GAoptions.elite = 1;
     GAoptions.numRepetitions = 1; %Number of times to repeat the GA
@@ -18,7 +18,7 @@ GAoptions.hostname = strtrim(hostname);
     if strcmp(strtrim(hostname),'lotus-bud')
         UseParallelVar = true;
     elseif strcmp(strtrim(hostname),'berzerk')
-        UseParallelVar = 'always'
+        UseParallelVar = 'never'
     elseif strcmp(strtrim(hostname),'Daniel-netbook')
         UseParallelVar = 'never';
     end
