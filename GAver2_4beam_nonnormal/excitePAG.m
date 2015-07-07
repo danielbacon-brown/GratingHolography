@@ -1,16 +1,25 @@
-function acidDist = excitePAG(intensityDist,dimensions,sensDens,absCrossSection)
+function acidCount = excitePAG(intensityDist,dimensions,sensDens,absCrossSection, beamPowerDens,t_exposure)
 %Returns the number of excited PAG in each cell
 %intensityDist: based off of power of 1/area using S4's units
 %sensDens: scalar density of the PAG in mol/um^2
 %dimensions: [x,y,z] in microns
 %absCrossSection: scalar in 1/um^2
+%beamPowerDens: power of the laser (W/um^2)
 
 N_a = 6.022e23; %Avogadro's Number
+c = 2.99e14; %speed of light %um/s
+eps_0 = 8.854e-6; %vacuum permittivity %F/um
+n = 1.58; %refractive index of SU8
 
+quantum_efficiency = 0.07; %Fraction of absorbed photons leading to 
+%t_exposure = 100;
+E_photon = 3.73e-19; %J   (=2.33eV) %532nm
 
 %%% First figure out a random distribution of PAG:
 vol_unit = dimensions(1)*dimensions(2)*dimensions(3); %um^3
 moleculesPerUnit = N_a*sensDens*vol_unit %molecules/unit cell
+
+cells = size(intensityDist);
 
 %lambda_poisson = average # molecules per cell < 10 %in order for Poisson distribution to be approximately right 
 %So a^3 > #molecules/unit / #cells/unit
@@ -36,7 +45,30 @@ if a > 1
 end
 
 
+%Calculate the real electric field
+%  S4 gives electric field in units of V/sqrt(A), assuming incident beam power of 1
+%  W/A, where A is the area of the unit cell (S4 later divides this power by
+%  cos(phi) to account for cosine law)
+% E_r = E_s*sqrt(I_r/I_s)
+%I_dist = c*n*eps_0/2*(I_r/I_s)*abs(E_s)^2
 
+I_r_over_I_s = beamPowerDens * (dimensions(1)*dimensions(2)) %Scale by real beam power %W/A
+intensityDist_r = c*n*eps_0/2*I_r_over_I_s*intensityDist;  %Calc real interference intensity %W/um^2
+
+
+flux_photon = IN*t_exposure/E_photon/1e12;   %Distribution of photons at each points %#photons/um^2        %W/um^2 * s / (J/photon)  * (um/m)^2
+
+prob_abs = 1 - exp(-absCrossSection.*quantum_efficiency.*flux_photon); %Probability at least one photon is absorbed at each point   %1/um^2 * 1 * #photons/um^2
+
+acidCount = zeros(size(intensityDist_r));
+for i_x = 1:cells(1)
+    for i_y = 1:cells(2)
+        for i_z = 1:cells(3)
+            acidCount(i_x,i_y,i_z) = binornd( sensCount(i_x,i_y,i_z), prob_abs(i_x,i_y,i_z) ); %Binomial distribution to give # of excited acid in each volume
+        end
+    end
+    disp(i_x)
+end
 
 
 
