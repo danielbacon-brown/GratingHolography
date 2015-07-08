@@ -1,49 +1,58 @@
-function acidCount = excitePAG(intensityDist,dimensions,sensDens,absCrossSection, beamPowerDens,t_exposure)
+function acidCount = excitePAG(intensityDist,dimensions,sensDens,absCrossSection, t_exposure)
 %Returns the number of excited PAG in each cell
 %intensityDist: based off of power of 1/area using S4's units
-%sensDens: scalar density of the PAG in mol/um^2
+%sensDens: scalar density of the PAG in molecules/um^3
 %dimensions: [x,y,z] in microns
-%absCrossSection: scalar in 1/um^2
-%beamPowerDens: power of the laser (W/um^2)
+%absCrossSection: scalar in 1/nm^2
+%beamPowerDens: power of the laser (W/m^2)
+
+INmax = max(max(max(intensityDist)))
+INmin = min(min(min(intensityDist)))
+
 
 N_a = 6.022e23; %Avogadro's Number
-c = 2.99e14; %speed of light %um/s
-eps_0 = 8.854e-6; %vacuum permittivity %F/um
+c = 2.99e8; %speed of light %m/s
+eps_0 = 8.854e-12; %vacuum permittivity %F/m  %length units of c and eps_0 will cancel
 n = 1.58; %refractive index of SU8
+q = 1.6e-19; %Coulombs % fundamental charge
+h = 6.626e-34; %Planck's constant %J*s
 
 quantum_efficiency = 0.07; %Fraction of absorbed photons leading to 
 %t_exposure = 100;
-E_photon = 3.73e-19; %J   (=2.33eV) %532nm
+E_photon = h*c/(0.532e-6); %J   (=2.33eV) %532nm
 
 %%% First figure out a random distribution of PAG:
 vol_unit = dimensions(1)*dimensions(2)*dimensions(3); %um^3
-moleculesPerUnit = N_a*sensDens*vol_unit %molecules/unit cell
+moleculesPerUnit = sensDens*vol_unit %molecules/unit cell
 
 cells = size(intensityDist);
 
 %lambda_poisson = average # molecules per cell < 10 %in order for Poisson distribution to be approximately right 
 %So a^3 > #molecules/unit / #cells/unit
-a = ceil( (moleculesPerUnit/(cells(1)*cells(2)*cells(3)))^(1/3) );
+a = ceil( (moleculesPerUnit/(cells(1)*cells(2)*cells(3)))^(1/3) )
 
 cellsA = cells*a; %increase number of cells to better approximate Poisson's distribution
+poisson_lambda = moleculesPerUnit/(cellsA(1)*cellsA(2)*cellsA(3)) %lambda used in poisson distribution
 
 %populate sensitizer molecules:
-sensCount = poissrnd(poisson_lambda, cellsA,cellsA,cellsA);  %Create higher density cell array for more accurate distribution
+sensCount = poissrnd(poisson_lambda, cellsA(1),cellsA(2),cellsA(3));  %Create higher density cell array for more accurate distribution
 sensSum = sum(sum(sum(sensCount))) %Should match moleculesPerUnit
 
 if a > 1
     %Reduce number of cells in sensCount to match 
-    sensCount_reduced = zeros(Nx,Ny,Nz);
-    for i_i = 1:Nx
-        for j_i = 1:Ny
-            for k_i = 1:Nz
-                sensCount_reduced(i_i,j_i,k_i) = sum(sum(sum( sensCount(a*i_i-2:a*i_i, a*j_i-2:3*j_i, a*k_i-2:a*k_i) ))); %gets total number of molecules in larger cell
+    sensCount_reduced = zeros(cells(1),cells(2),cells(3));
+    for i_i = 1:cells(1)
+        for j_i = 1:cells(2)
+            for k_i = 1:cells(3)
+                sensCount_reduced(i_i,j_i,k_i) = sum(sum(sum( sensCount((a*(i_i-1)+1):(a*i_i), (a*(j_i-1)+1):(a*j_i), (a*(k_i-1)+1):(a*k_i)) ))); %gets total number of molecules in larger cell
             end
         end
     end
     sensCount = sensCount_reduced;
 end
-
+maxSenscount = max(max(max(sensCount)))
+minSensCount = min(min(min(sensCount)))
+sensSum = sum(sum(sum(sensCount))) %Should match moleculesPerUnit
 
 %Calculate the real electric field
 %  S4 gives electric field in units of V/sqrt(A), assuming incident beam power of 1
@@ -52,13 +61,24 @@ end
 % E_r = E_s*sqrt(I_r/I_s)
 %I_dist = c*n*eps_0/2*(I_r/I_s)*abs(E_s)^2
 
-I_r_over_I_s = beamPowerDens * (dimensions(1)*dimensions(2)) %Scale by real beam power %W/A
-intensityDist_r = c*n*eps_0/2*I_r_over_I_s*intensityDist;  %Calc real interference intensity %W/um^2
+%I_r_over_I_s = beamPowerDens * (dimensions(1)*1e-6*dimensions(2)*1e-6) %Scale by real beam power %W/A %(I_s is 1W/unitcellarea)
+%I_r_over_I_s = beamPowerDens / (1 / (dimensions(1)*1e-6*dimensions(2)*1e-6) )
+%intensityDist_r = c*n*eps_0/2*I_r_over_I_s*intensityDist;  %Calc real interference intensity %W/um^2
 
+%%% E is in units of V/sqrt(A), so intensityDist is given in W/A
+%intensityDist_r = I_r_over_I_s*intensityDist;  %Calc real interference intensity %W/m^2
+intensityDist_r = intensityDist/(dimensions(1)*dimensions(2))  * 1e12;  %W/A * (1A/um^2) * (um^2/m^2) => W/m^2
+INrmax = max(max(max(intensityDist_r)))
+INrmin = min(min(min(intensityDist_r)))
 
-flux_photon = IN*t_exposure/E_photon/1e12;   %Distribution of photons at each points %#photons/um^2        %W/um^2 * s / (J/photon)  * (um/m)^2
+flux_photon = intensityDist_r*t_exposure/E_photon/1e18;   %Distribution of photons at each points %#photons/nm^2        %W/m^2 * s / (J/photon) * (nm/m)^2
+pfmax = max(max(max(flux_photon)))
+pfmin = min(min(min(flux_photon)))
 
-prob_abs = 1 - exp(-absCrossSection.*quantum_efficiency.*flux_photon); %Probability at least one photon is absorbed at each point   %1/um^2 * 1 * #photons/um^2
+prob_abs = 1 - exp(-absCrossSection.*quantum_efficiency.*flux_photon); %Probability at least one photon is absorbed at each point   %nm^2/molecule * 1 * #photons/nm^2
+PAmax = max(max(max(prob_abs)))
+PAmin = min(min(min(prob_abs)))
+
 
 acidCount = zeros(size(intensityDist_r));
 for i_x = 1:cells(1)
@@ -70,7 +90,12 @@ for i_x = 1:cells(1)
     disp(i_x)
 end
 
+percent_excited = sum(sum(sum(acidCount))) / sum(sum(sum(sensCount)))
 
+
+    %Plot histogram of intensities
+    figure
+    hist(reshape(intensityDist_r,1,[]),100)
 
 
 end

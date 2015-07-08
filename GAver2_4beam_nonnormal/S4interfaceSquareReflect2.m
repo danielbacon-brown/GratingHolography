@@ -19,11 +19,18 @@ classdef S4interfaceSquareReflect2
         setBackLayersScript;
         collectDataScript;
         getAmplitudesScript;
+        c;
+        n_interference;
+        eps_0;
     end
     
     methods
         
         function S = S4interfaceSquareReflect2(options) %.dimensions,cells,metal_name,thickness_metal, isAirGap,n_interference)
+            
+            S.c = 2.99e8 %m/s
+            S.n_interference = 1.58;
+            S.eps_0 = 8.854e-12; %vacuum permittivity %F/m 
             
             S.isAirGap = options.isAirGap;
             
@@ -238,7 +245,7 @@ delete([scriptFilename]);
             %sizeEx = size(Ex)
             Ey = A(:,6) + 1i*A(:,7);
             Ez = A(:,8) + 1i*A(:,9);
-            I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez));
+            I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez)) * S.c*S.n_interference*S.eps_0/2;
             %I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez)) .* GAoptions.gratingOptions.n_filled.*GAoptions.eps_0*GAoptions.c/2;
             %NEED TO FIGURE OUT HOW TO CONVERT S4 INTENSITY UNITS TO REAL UNITS1.0
             %I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez));
