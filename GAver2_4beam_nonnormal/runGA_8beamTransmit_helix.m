@@ -10,8 +10,8 @@ function runGA_8beamTransmit_helix
 GAoptions.hostname = strtrim(hostname);
 
 %%%%% Genetic Algorithm Options %%%%%
-    GAoptions.popSize = 200;
-    GAoptions.numGen = 20;
+    GAoptions.popSize = 6;
+    GAoptions.numGen = 2;
     GAoptions.elite = 1;
     GAoptions.numRepetitions = 1; %Number of times to repeat the GA
     %Options for built-in GA algorithm:
@@ -120,6 +120,7 @@ GAoptions.hostname = strtrim(hostname);
     incidentLightOptions.n_incidence = GAoptions.n_prism; %The refractive index of the material that the plane wave is in
     incidentLightOptions.period = GAoptions.period;
     incidentLightOptions.C_over_A = GAoptions.C_over_A;
+    incidentLightOptions.beamPowerDens = 20935  %W/m^2      %=20935W/m^2
     GAoptions.incidentLightOptions = incidentLightOptions;
     GAoptions.incidentLightFunction = IncidentLightAngled4BeamSymmetric(incidentLightOptions);
 
@@ -244,6 +245,13 @@ GAoptions.hostname = strtrim(hostname);
     fdtd.addCubesDirectly = 1;
     GAoptions.fdtd = fdtd;
     
+    
+    %%%%% Do sensitizer simulation %%%%%
+    sensSim.sensDens = 8290000 *4; %Density of sensitizer molecules per um^3
+    %abs_prob_per_photon = 2.91e-7; %nm^2/molecule %BCPI %based on 5-9-15 UV-vis measurements 
+    sensSim.absCrossSection = 2.91e-7; %nm^2/molecule %BCPI  %MAY NEED TO UPDATE
+    sensSim.Texposure = 200; %s
+    GAoptions.sensSim = sensSim;
     
     
     %Creation of 'GAproblem' for built-in Matlab GA

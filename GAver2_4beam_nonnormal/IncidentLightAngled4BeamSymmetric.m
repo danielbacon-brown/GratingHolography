@@ -11,7 +11,11 @@ classdef IncidentLightAngled4BeamSymmetric %< IncidentLightGenerator
        wavelength;
        phi; %azimuthal angle of incidence
        theta; %polar angle of incidence
+       Pdens; %incident power %W/m^2 
+       eps_0; %vacuum permittivity %F/m
+       c; %Speed of light
    end
+   
    properties % Public access
    end 
    
@@ -22,7 +26,7 @@ classdef IncidentLightAngled4BeamSymmetric %< IncidentLightGenerator
             L.n_interference = options.n_interference;
             L.n_incidence = options.n_incidence;
             %k_x = pi/options.period;
-            k_0 = 2*pi/L.wavelength %um^-1
+            k_0 = 2*pi/L.wavelength   %um^-1
             k_x = k_0/(sqrt(2 + 1/(options.C_over_A^2)))
             %k_y = pi/options.period;
             k_y=k_x
@@ -37,6 +41,10 @@ classdef IncidentLightAngled4BeamSymmetric %< IncidentLightGenerator
             %F.incidentField.wavelength = options.wavelength; %um %GDC will divide by refractive index of superstrate
             %F.incidentField.f2=sin(phi0)*cos(theta0)/options.wavelength; %These are projections of the incident spatial-frequency vector on x-y plane (in this case, zero)
             %F.incidentField.f3=sin(phi0)*sin(theta0)/options.wavelength;
+            
+            L.Pdens = options.beamPowerDens * options.period*options.period*1e-12; %W/m^2 * (um*um) * (m^2/um^2) %Gives power going through a unit cell (if normal) 
+            L.eps_0 = 8.854e-12; %F/m
+            L.c = 2.99e8; %m/s
             
             L.chromNpsi = options.chromNpsi;
             L.chromNchi = options.chromNchi;
@@ -55,8 +63,8 @@ classdef IncidentLightAngled4BeamSymmetric %< IncidentLightGenerator
             
             
             
-            fieldParameters.Esp = [cos(psi)*cos(chi)-1i*sin(psi)*sin(chi);...  %Calculate incident Field E-vector
-                sin(psi)*cos(chi)+1i*cos(psi)*sin(chi)];
+            fieldParameters.Esp = [cos(psi)*cos(chi)-1i*sin(psi)*sin(chi); ...  %Calculate incident Field E-vector
+                sin(psi)*cos(chi)+1i*cos(psi)*sin(chi)] .* sqrt(2*L.Pdens/(L.n_incidence*L.eps_0*L.c) )%/ cos(fieldParameters.phi) ); %Should be units of V/sqrt(unit-area)
             
        end
 

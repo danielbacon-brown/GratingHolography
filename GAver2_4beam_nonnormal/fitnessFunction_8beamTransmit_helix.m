@@ -56,7 +56,7 @@ end
 
 
 %Do offset of interference pattern
-intensityDist = GAoptions.offsetConductor.doOffset(intensityDist, offsetChromosome);
+intensityDist = GAoptions.offsetConductor.doOffset(intensityDist, offsetChromosome); %W/(unitarea)
 
 
 %Calculate Fitness
@@ -79,35 +79,71 @@ if exist('doPlots','var') %Plot simulated structure
     zlim([1 size(intensityDist,3)+2])
     
     
-    writeLumericalRunFileSquare(GAoptions, intensityDist>threshold);
-    system(['fdtd-solutions -run ', GAoptions.dir, GAoptions.LumRunScript]);
+%     %Do Lumerical simulation
+%     writeLumericalRunFileSquare(GAoptions, intensityDist>threshold);
+%     system(['fdtd-solutions -run ', GAoptions.dir, GAoptions.LumRunScript]);
+%     while(~exist([GAoptions.dir,GAoptions.currentLumResultsFile,'.mat'],'file'))
+%        pause(0.1)
+%     end
+%     LumResults = load([GAoptions.dir,GAoptions.currentLumResultsFile]);
+%     transmissionRight = LumResults.transmission_right/sqrt(2);
+%     transmissionLeft = LumResults.transmission_left/sqrt(2);
+%     reflectionRight = LumResults.reflection_right*-1/sqrt(2);
+%     reflectionLeft = LumResults.reflection_left*-1/sqrt(2);
+    
+%     %Plot transmission and reflection of RCP and LCP waves
+%     figure
+%     frequencies = linspace(2.99e8/GAoptions.fdtd.maxMeasWL, 2.99e8/GAoptions.fdtd.minMeasWL, GAoptions.fdtd.numMeasWL); %Linear in frequency space
+%     %wavelengths = linspace(GAoptions.fdtd.minMeasWL,GAoptions.fdtd.maxMeasWL,GAoptions.fdtd.numMeasWL);
+%     wavelengths = 2.99e8./frequencies; %Convert to wavelength
+%     plot(wavelengths,transmissionRight,'r',wavelengths,transmissionLeft,'b');
+%     figure
+%     plot(wavelengths,reflectionRight,'r',wavelengths,reflectionLeft,'b');
+
+
+
+
     
     
-    while(~exist([GAoptions.dir,GAoptions.currentLumResultsFile,'.mat'],'file'))
-        pause(0.1)
+    %Do sensitizer sim
+    acidCount = excitePAG(intensityDist,GAoptions.dimensions,GAoptions.sensSim.sensDens,GAoptions.sensSim.absCrossSection,GAoptions.sensSim.Texposure);
+    acidMax = max(max(max(acidCount)))
+    acidMin = min(min(min(acidCount)))
+    threshold = fixfill(acidCount,256,GAoptions.fill); %Calculates the threshold value that will yield desired fill fraction
+    figure
+    patched = patch(isosurface(padarray(acidCount,[1,1,1],100),threshold));
+    set(patched,'FaceColor', [255 127 80]/256, 'EdgeColor', 'none');
+    view(3);
+    camlight
+    axis equal
+    lighting gouraud
+    xlim([1 size(acidCount,1)+2])
+    ylim([1 size(acidCount,2)+2])
+    zlim([1 size(acidCount,3)+2])
+    
+    
+    %DO SMOOTHING//DIFFUSION (WITH SUMMING)
+    diffRate = 5;
+    smoothed = zeros([size(acidCount),8]);
+    sizesmoothedout= size(smoothed)
+    smoothed(:,:,:,1) = smooth3(acidCount,'gaussian',diffRate);
+    for smooth_i = 2:size(smoothed,4)
+        smoothed(:,:,:,smooth_i) = smooth3(smoothed(:,:,:,smooth_i-1),'gaussian',diffRate);
+        disp(smooth_i)
     end
-        
-    LumResults = load([GAoptions.dir,GAoptions.currentLumResultsFile]);
-    transmissionRight = LumResults.transmission_right/sqrt(2);
-    transmissionLeft = LumResults.transmission_left/sqrt(2);
-    reflectionRight = LumResults.reflection_right*-1/sqrt(2);
-    reflectionLeft = LumResults.reflection_left*-1/sqrt(2);
-    
-    
-    
-    
+    crosslinkCount = sum(smoothed,4);
+    sizesmoothedout= size(crosslinkCount)
+    crosslinkThreshold = fixfill(crosslinkCount, 256, GAoptions.fill)
     figure
-    frequencies = linspace(2.99e8/GAoptions.fdtd.maxMeasWL, 2.99e8/GAoptions.fdtd.minMeasWL, GAoptions.fdtd.numMeasWL); %Linear in frequency space
-    %wavelengths = linspace(GAoptions.fdtd.minMeasWL,GAoptions.fdtd.maxMeasWL,GAoptions.fdtd.numMeasWL);
-    wavelengths = 2.99e8./frequencies; %Convert to wavelength
-    plot(wavelengths,transmissionRight,'r',wavelengths,transmissionLeft,'b');
-    
-    figure
-    plot(wavelengths,reflectionRight,'r',wavelengths,reflectionLeft,'b');
-    
-    
-    figure
-    hist(reshape(intensityDist,1,[]),100)
+    patched = patch(isosurface(padarray(crosslinkCount,[1,1,1],100),crosslinkThreshold));
+    set(patched,'FaceColor', [255 127 80]/256, 'EdgeColor', 'none');
+    view(3);
+    camlight
+    axis equal
+    lighting gouraud
+    xlim([1 size(acidCount,1)+2])
+    ylim([1 size(acidCount,2)+2])
+    zlim([1 size(acidCount,3)+2])
     
     
     %CALCULATE REPEAT CELLS

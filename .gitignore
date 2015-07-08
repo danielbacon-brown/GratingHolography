@@ -14,3 +14,7 @@
 
 # Simulink Code Generation
 slprj/
+
+*.E
+*.H
+hs_err*.log
