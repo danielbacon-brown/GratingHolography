@@ -9,6 +9,7 @@ runout = fopen([options.dir,options.LumRunScript], 'w');
 structureSU8 = repmat(structureSU8,[1,1,options.fdtd.repeatUnits]);
 
 
+
 %SETUP
 fprintf(runout,'newproject; \n');
 
@@ -16,18 +17,9 @@ structureThickness = options.fdtd.shrinkFactor*options.fdtd.repeatUnits*options.
 
 %Mesh
 fprintf(runout,'addfdtd; \n');
-fprintf(runout,'set("x", 0); \n');
-fprintf(runout,'set("y", 0); \n');
+setXY(runout,options);
 fprintf(runout,'set("z", 0); \n');
-fprintf(runout,'set("x span", %e ); \n', options.dimensions(1)*1e-6);
-%if options.hexagonalGrating
-%    fprintf(runout,'set("y span", %e ); \n', 2*options.dimensions(2)*1e-6);
-%else    %square grating
-    fprintf(runout,'set("y span", %e ); \n', options.dimensions(2)*1e-6);
-%end
 fprintf(runout,'set("simulation time",%i); \n', options.fdtd.simulationTime*1e-15);
-%fprintf(runout,'set("z span", %e ); \n', (options.Nstructrepeat*param.Z_T_shrunk+5)*1e-6); %want 2.5 microns on both top and bottom of structure
-%fprintf(runout,'set("z span", %e ); \n', (param.su8thicknessShrunk+5)*1e-6);
 fprintf(runout,'set("z span", %e ); \n', structureThickness*3*1e-6);
 fprintf(runout,'set("mesh type","auto non-uniform"); \n');
 fprintf(runout,'set("mesh accuracy",%i); \n',options.fdtd.meshAccuracy);
@@ -38,15 +30,7 @@ fprintf(runout,'set("y min bc","periodic"); \n');
 %Plane Source
 fprintf(runout,'addplane; \n');
 fprintf(runout,'set("name","source1"); \n');
-fprintf(runout,'set("x", 0); \n');
-fprintf(runout,'set("y", 0); \n');
-fprintf(runout,'set("x span", %e ); \n', options.dimensions(1)*1e-6);
-%if options.hexagonalGrating
-%    fprintf(runout,'set("y span", %e ); \n', 2*options.dimensions(2)*1e-6);
-%else %square grating
-    fprintf(runout,'set("y span", %e ); \n', options.dimensions(2)*1e-6);
-%end
-%fprintf(runout,'set("z", %e); \n', (-options.Nstructrepeat*param.Z_T_shrunk/2-1)*1e-6); %plane source is 1 micron below bottom of structure
+setXY(runout,options);
 fprintf(runout,'set("z", %e); \n', (-structureThickness/2-0.3)*1e-6);
 fprintf(runout,'set("wavelength start",%e); \n', options.fdtd.minSourceWL);
 fprintf(runout,'set("wavelength stop", %e); \n', options.fdtd.maxSourceWL);
@@ -60,14 +44,7 @@ fprintf(runout,'set("phase",90); \n');
 %Transmission detector
 fprintf(runout,'addprofile; \n');
 fprintf(runout,'set("name","transmission"); \n');
-fprintf(runout,'set("x",%e); \n', 0);
-fprintf(runout,'set("y",%e); \n', 0);
-fprintf(runout,'set("x span",%e); \n', options.dimensions(1)*1e-6);
-%if options.hexagonalGrating
-%    fprintf(runout,'set("y span", %e ); \n', 2*options.dimensions(2)*1e-6);
-%else
-    fprintf(runout,'set("y span",%e); \n', options.dimensions(1)*1e-6);
-%end
+setXY(runout,options);
 fprintf(runout,'set("z", %e); \n', (structureThickness/2+0.5)*1e-6); %transmission detector is 2 microns above structure
 fprintf(runout,'set("override global monitor settings",1); \n');
 fprintf(runout,'set("use source limits",0); \n');
@@ -79,14 +56,7 @@ fprintf(runout,'set("use linear wavelength spacing",0); \n');
 %Reflection detector
 fprintf(runout,'addprofile; \n');  
 fprintf(runout,'set("name","reflection"); \n');
-fprintf(runout,'set("x",%e); \n', 0);
-fprintf(runout,'set("y",%e); \n', 0);
-fprintf(runout,'set("x span",%e); \n', options.dimensions(1)*1e-6);
-%if options.hexagonalGrating
-%    fprintf(runout,'set("y span", %e ); \n', 2*options.dimensions(2)*1e-6);
-%else
-    fprintf(runout,'set("y span",%e); \n', options.dimensions(1)*1e-6);
-%end
+setXY(runout,options);
 fprintf(runout,'set("z", %e); \n', (-structureThickness/2-0.5)*1e-6); %reflection detector is 2 microns below structure
 fprintf(runout,'set("override global monitor settings",1); \n');
 fprintf(runout,'set("use source limits",0); \n');
@@ -96,11 +66,21 @@ fprintf(runout,'set("frequency points",%i); \n', options.fdtd.numMeasWL);
 fprintf(runout,'set("use linear wavelength spacing",0); \n');
 
 
+if options.fdtd.SU8matrix
+    fprintf(runout,'addrect; \n');
+    setXY(runout,options);
+    fprintf(runout,'set("z",%e); \n', 0);
+    fprintf(runout,'set("z span",%e); \n', structureThickness*1e-6);
+    fprintf(runout,'set("material","<Object defined dielectric>"); \n');
+    fprintf(runout,'set("index",1.58); \n');
+    fprintf(runout,'set("override mesh order from material database", 1); \n');
+    fprintf(runout,'set("mesh order",3); \n');
+end
+
 
 if options.fdtd.addCubesDirectly
     fprintf(runout,'redrawoff; \n');
     
-    %ASSUMES HEXAGONAL
     
     dx = options.dimensions(1)/options.cells(1)*1e-6;
     dy = options.dimensions(2)/options.cells(2)*1e-6;
@@ -162,3 +142,11 @@ fclose(runout);
 
 end
 
+%Sets the x-y dimensions to match the periodicity
+function setXY(runout,options)
+    fprintf(runout,'set("x", 0); \n');
+    fprintf(runout,'set("y", 0); \n');
+    fprintf(runout,'set("x span", %e ); \n', options.dimensions(1)*1e-6);
+    fprintf(runout,'set("y span", %e ); \n', options.dimensions(2)*1e-6);
+
+end
