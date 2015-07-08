@@ -11,7 +11,7 @@ GAoptions.hostname = strtrim(hostname);
 
 %%%%% Genetic Algorithm Options %%%%%
     GAoptions.popSize = 200;
-    GAoptions.numGen = 20;
+    GAoptions.numGen = 30;
     GAoptions.elite = 1;
     GAoptions.numRepetitions = 1; %Number of times to repeat the GA
     %Options for built-in GA algorithm:
@@ -53,7 +53,7 @@ GAoptions.hostname = strtrim(hostname);
 % view(3);
 % camlight
 % lighting gouraud
-% xlim([1 size(intensityDist,1)])
+% xlim([1 size(intensityDisGA_07-07-15_20:39_N2000t,1)])
         GAoptions.dir = ['/home/danielbacon-brown/GA_8beamReflect_helix_data/','GA_',datestr(now,'mm-dd-yy_HH:MM'),'_N',int2str(GAoptions.popSize), '/']  %directory that all this goes into
     elseif strcmp(strtrim(hostname),'Daniel-netbook')
         GAoptions.dir = ['C:/Users/daniel/GA_8beamReflect_helix_data/','GA_ver2_',datestr(now,'mm-dd-yy_HH;MM'),'_N',int2str(GAoptions.popSize), '/']  %directory that all this goes into
@@ -94,7 +94,7 @@ GAoptions.hostname = strtrim(hostname);
 
     %%%%%% Lattice Dimensions %%%%%
     GAoptions.laserWavelength = 0.532; %um
-    GAoptions.C_over_A = 1;    %Max C/A for air gap is 0.578 %for PDMS prism, max C/A = 1.396
+    GAoptions.C_over_A = 0.95;    %Max C/A for air gap is 0.578 %for PDMS prism, max C/A = 1.396
     GAoptions.lattice = 'square';
     GAoptions.n_PR = 1.58; %refractive index of the photoresist (SU8)
     GAoptions.n_substrate = 1.5; %Glass slide as substrate
@@ -137,7 +137,7 @@ GAoptions.hostname = strtrim(hostname);
     gratingOptions.C_over_A = GAoptions.C_over_A;
     gratingOptions.periodicity = GAoptions.period; %getA(gratingOptions.c_over_a, gratingOptions.n_filled, incidentLightOptions.wavelength) * gratingOptions.n_filled/gratingOptions.n_void;  %Need to scale by refractive index because of critical angle at air-SU8 interface
     gratingOptions.chromNthickness = 8;  %Number of chromosome positions for each variable
-    gratingOptions.thicknessMax = 0.3; %Maximum thickness of grating %um
+    gratingOptions.thicknessMax = 0.2; %Maximum thickness of grating %um
     gratingOptions.spacingMin = 0.2; %Minimum block width 
     gratingOptions.order = make_order(4, 'hexagonal');
     gratingOptions.SU8thicknessMax = 10; %um
