@@ -226,6 +226,15 @@ GAoptions.hostname = strtrim(hostname);
     GAoptions.calcFitness = @calcVolumetricMatchExclusion;
     %GAoptions.fitnessFunction.targetstructure = 'helix_1to1';
     
+    
+    %S4 layer data:
+    S4interfaceOptions.materialNames =   ['Vacuum',  'SU8',  'Prism',    'Glass',        'ITO'];
+    S4interfaceOptions.materialRI =      [1,         1.58,   n_prism,    n_substrate,    1.94-0.046i];      
+    
+    S4interfaceOptions.layerNames =        ['Front',   'TCO',  'PR',   'Grating',  'Back'];
+    S4interfaceOptions.layerMaterials =    ['Prism',   'ITO',  'SU8',  'Vacuum',   'Vacuum'];
+    S4interfaceOptions.layerThicknesses =  [0,         0.1,    0,      0,          0];      
+    
 
     %Writer for S4 runfile
     S4interfaceOptions.dimensions = GAoptions.dimensions;
