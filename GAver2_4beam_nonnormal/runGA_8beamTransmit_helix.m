@@ -10,8 +10,8 @@ function runGA_8beamTransmit_helix
 GAoptions.hostname = strtrim(hostname);
 
 %%%%% Genetic Algorithm Options %%%%%
-    GAoptions.popSize = 6;
-    GAoptions.numGen = 2;
+    GAoptions.popSize = 3000;
+    GAoptions.numGen = 50;
     GAoptions.elite = 1;
     GAoptions.numRepetitions = 1; %Number of times to repeat the GA
     %Options for built-in GA algorithm:
@@ -98,7 +98,7 @@ GAoptions.hostname = strtrim(hostname);
     GAoptions.lattice = 'square';
     GAoptions.n_PR = 1.58; %refractive index of the photoresist (SU8)
     GAoptions.n_substrate = 1.5; %Glass slide as substrate
-    GAoptions.n_prism = 1.5; %PDMS prism
+    GAoptions.n_prism = 1.5; %glass prism   %PDMS prism (1.43)
     %GAoptions.n_prism = 1; %no prism
     GAoptions.n_gratingVoid = 1; %assuming vacuum-SU8 grating
     %This assumes the 4-beam symmetric configuration
