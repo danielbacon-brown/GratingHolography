@@ -65,7 +65,7 @@ intensityDist = GAoptions.offsetConductor.doOffset(intensityDist, offsetChromoso
 
 
 %Calculate Fitness
-[fitness,threshold] = calcVolumetricMatchExclusion(GAoptions.targetStructure, GAoptions.exclusionStructure, intensityDist,GAoptions.fill);
+[fitness,threshold] = calcVolumetricMatchEdgeExclusion(GAoptions.targetStructure, GAoptions.exclusionStructure,GAoptions.edgeExclusionStructure, intensityDist,GAoptions.fill);
 %threshold = fixfill(reshape(intensityDist,1,[]),256,GAoptions.fill); %Calculates the threshold value that will yield desired fill fraction
 %fitness = rand();
 

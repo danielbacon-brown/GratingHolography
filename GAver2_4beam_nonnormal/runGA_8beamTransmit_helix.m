@@ -192,8 +192,16 @@ GAoptions.hostname = strtrim(hostname);
     
     GAoptions.fill = (targetfill+exclusionfill)/2;  %Matches interference pattern fill to average of the target and exclusion structures. Consider adding fill factor to chromosome
 
-    
-
+    %1 at the edges of the unit cell to reduce fitness of x-y continuous
+    %structures
+    edgeExclusionStructure = zeros(GAoptions.cells);
+    edgeExclusionStructure(1,:,:) = 1;
+    edgeExclusionStructure(end,:,:) = 1;
+    edgeExclusionStructure(:,1,:) = 1;
+    edgeExclusionStructure(:,end,:) = 1;
+    edgeExclusionStructure(:,:,1) = 1;
+    edgeExclusionStructure(:,:,end) = 1;
+    GAoptions.edgeExclusionStructure = edgeExclusionStructure;
     
     
     % Not used for S4-based sims
