@@ -7,6 +7,7 @@ function struct = generateHelixStructureParallelogram(options)
 %   u = first periodicity vector [x,y,z] %um
 %   v = second periodicity vector [x,y,z] %um
 %   w = third periodicity vector [x,y,z] %um
+% 1 = in helix
 
 struct = zeros(options.cells); 
 
