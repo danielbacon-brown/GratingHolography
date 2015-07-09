@@ -199,8 +199,6 @@ GAoptions.hostname = strtrim(hostname);
     edgeExclusionStructure(end,:,:) = 1;
     edgeExclusionStructure(:,1,:) = 1;
     edgeExclusionStructure(:,end,:) = 1;
-    edgeExclusionStructure(:,:,1) = 1;
-    edgeExclusionStructure(:,:,end) = 1;
     GAoptions.edgeExclusionStructure = edgeExclusionStructure;
     
     
