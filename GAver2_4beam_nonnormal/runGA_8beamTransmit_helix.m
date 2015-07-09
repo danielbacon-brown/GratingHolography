@@ -243,6 +243,7 @@ GAoptions.hostname = strtrim(hostname);
     fdtd.maxMeasWL = 4e-6;  %m
     fdtd.numMeasWL = 500;
     fdtd.addCubesDirectly = 1;
+    fdtd.SU8matrix = 1;
     GAoptions.fdtd = fdtd;
     
     
