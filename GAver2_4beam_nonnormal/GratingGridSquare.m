@@ -152,13 +152,14 @@ classdef GratingGridSquare
             end
             
             grating.SU8thickness = convertChrom_gc( SU8thicknessChrom, G.chromNSU8thickness)*(G.SU8thicknessMax-G.SU8thicknessMin) + G.SU8thicknessMin;
+            grating.ITOthickness = convertChrom_gc( ITOthicknessChrom, G.chromNITOthickness)*(G.ITOthicknessMax-G.ITOthicknessMin) + G.ITOthicknessMin;
             
         end
         
         
         
         function chromosomeSize = getChromosomeSize(G)
-            chromosomeSize = G.chromNthickness + G.chromNspacingX*(G.NblockX-1) + G.chromNspacingY*(G.NblockY-1) + G.chromNcellArr + G.chromNSU8thickness ;
+            chromosomeSize = G.chromNthickness + G.chromNspacingX*(G.NblockX-1) + G.chromNspacingY*(G.NblockY-1) + G.chromNcellArr + G.chromNSU8thickness + G.chromNITOthickness;
         end
         
         
