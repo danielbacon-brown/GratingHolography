@@ -3,6 +3,10 @@ function fitness = fitnessFunction_8beamTransmit_helix(GAoptions,chromosome,doPl
 %Use in a separate file allows the chromosome to be measured directly
 
 
+% %TEST
+% disp(['grating chrom length: ', num2str(GAoptions.gratingFunction.getChromosomeSize())])
+% disp(['light chrom length: ', num2str(GAoptions.incidentLightFunction.getChromosomeSize())])
+% disp(['offset chrom length: ', num2str(GAoptions.offsetConductor.getChromosomeSize())])
 
 %Splits chromosome according to each module
 [gratingChromosome ,incidentLightChromosome, offsetChromosome ] = splitChromosome(chromosome,[ ...
@@ -12,11 +16,12 @@ function fitness = fitnessFunction_8beamTransmit_helix(GAoptions,chromosome,doPl
     GAoptions.offsetConductor.getChromosomeSize() ...
     ]);
 
+
 %Generate Grating
 grating = GAoptions.gratingFunction.generateGrating(gratingChromosome);
 
 %TEST!!!!!!!!!!!!!!!!!
-%GAoptions.fill = 0.85
+%GAoptions.fill = 0.9
 %grating = createTestGrating();
 
 
@@ -151,22 +156,6 @@ if exist('doPlots','var') %Plot simulated structure
     %GAoptions.calcStructureFunction.prepareCommon(k231,GAoptions.dimensions*2,GAoptions.cells*2);
     %intensityDistRepeat = GAoptions.calcStructureFunction.calcIntensity( E231,k231,GAoptions.dimensions*2,GAoptions.cells,offsetChromosome);
     
-%     figure
-%     patched = patch(isosurface(padarray(intensityDistRepeat,[1,1,1],100),threshold));
-%     set(patched,'FaceColor', [255 127 80]/256, 'EdgeColor', 'none');
-%     view(3);
-%     camlight
-%     axis equal
-%     lighting gouraud
-%     xlim([1 size(intensityDistRepeat,1)+2])
-%     ylim([1 size(intensityDistRepeat,2)+2])
-%     zlim([1 size(intensityDistRepeat,3)+2])
-    
-    
-    %Save grating and incident field for S4 simulation
-%    save('lastGratingandField','grating','incidentEsp')
-    
-%    doS4(grating,incidentEsp)
     
 end
         

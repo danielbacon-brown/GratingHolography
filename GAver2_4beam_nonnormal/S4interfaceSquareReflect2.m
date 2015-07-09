@@ -97,7 +97,7 @@ classdef S4interfaceSquareReflect2
             %substrat (should be the same), ITO, SU8, SU8-air grating, air 
             S.setFrontLayersScript = [ ...
                 'S:AddLayer(''Front'', 0, ''Prism'')  \r\n' ... 
-                , 'S:AddLayer(''TCOLayer'',0.1, ''TCO'') \r\n' ...
+                , 'S:AddLayer(''TCOLayer'',0.15, ''TCO'') \r\n' ...
                 ... , 'S:AddLayer(''PrInterference'', 5, ''SU8'')  -- thick SU8 layer \r\n' ...
                 ];
             S.setBackLayersScript = [ ...
@@ -231,8 +231,11 @@ classdef S4interfaceSquareReflect2
             end
             disp(['importing data: ', GAoptions.dir,dataFilename,'.E'])
             if ~exist([GAoptions.dir,dataFilename,'.E'],'file') %If you can't find the file, ignore it and move on
-                intensityDist = [];
-                return;
+                pause(1)
+                if ~exist([GAoptions.dir,dataFilename,'.E'],'file')  %If it's still not there after a second, give up
+                    intensityDist = []
+                    return;
+                end
             end
             A = importdata([GAoptions.dir,dataFilename,'.E']); %Load data from script
             delete([GAoptions.dir,dataFilename,'.E']); %Clear data file for reuse
@@ -245,7 +248,11 @@ delete([scriptFilename]);
             %sizeEx = size(Ex)
             Ey = A(:,6) + 1i*A(:,7);
             Ez = A(:,8) + 1i*A(:,9);
-            I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez)) * S.c*S.n_interference*S.eps_0/2;
+            if isfield(S,'c')
+                I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez)) * S.c*S.n_interference*S.eps_0/2;
+            else
+                I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez));
+            end
             %I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez)) .* GAoptions.gratingOptions.n_filled.*GAoptions.eps_0*GAoptions.c/2;
             %NEED TO FIGURE OUT HOW TO CONVERT S4 INTENSITY UNITS TO REAL UNITS1.0
             %I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez));
@@ -336,7 +343,8 @@ delete([scriptFilename]);
             
             
             %Write strings to file and run:
-            ef=fopen([GAoptions.dir,scriptFilename],'w');  %open/create file
+            disp(['Writing to: ',GAoptions.dir,scriptFilename]) 
+            ef=fopen([GAoptions.dir,scriptFilename],'w')  %open/create file
             fprintf(ef,[S.setBasicScript,S.setMaterialsScript,S.setFrontLayersScript,setLayersScript,S.setBackLayersScript,excitationScript, setDataFilenameScript, S.collectDataScript, S.getAmplitudesScript]);
             %fprintf(ef,[S.constScript1,varScript,S.constScript2,excitationScript,S.constScript3]);
             fclose(ef);
