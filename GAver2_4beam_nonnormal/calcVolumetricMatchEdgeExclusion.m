@@ -25,7 +25,7 @@ f1 = -1*sum(sum(sum( targetStructure & simStruct )))/(size(targetStructure,1)*si
 f2 = sum(sum(sum( ~exclusionStructure & simStruct )))/(size(targetStructure,1)*size(targetStructure,1)*size(targetStructure,3))/fill; %Fraction of poitns contained by neither
 %Add -1 of 1@1 (1 is at edge) %If there are points at the edge, add to the
 %fitness % normalized to ~total number of edge points
-f3 = sum(sum(sum( edgeExclusionStructure & simStruct )))/(size(targetStructure,1)*size(targetStructure,2)*2+size(targetStructure,1)*size(targetStructure,3)*2+size(targetStructure,2)*size(targetStructure,3)*2);
+f3 = sum(sum(sum( edgeExclusionStructure & simStruct )))/(size(targetStructure,1)*size(targetStructure,3)*2+size(targetStructure,2)*size(targetStructure,3)*2);
 
 fitness = f1*4 + f2 + f3;
 
