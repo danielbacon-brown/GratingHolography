@@ -97,7 +97,7 @@ classdef S4interfaceSquareReflect2
             %substrat (should be the same), ITO, SU8, SU8-air grating, air 
             S.setFrontLayersScript = [ ...
                 'S:AddLayer(''Front'', 0, ''Prism'')  \r\n' ... 
-                , 'S:AddLayer(''TCOLayer'',0.15, ''TCO'') \r\n' ...
+                , 'S:AddLayer(''TCOLayer'',0.075, ''TCO'') \r\n' ...
                 ... , 'S:AddLayer(''PrInterference'', 5, ''SU8'')  -- thick SU8 layer \r\n' ...
                 ];
             S.setBackLayersScript = [ ...
@@ -248,11 +248,11 @@ delete([scriptFilename]);
             %sizeEx = size(Ex)
             Ey = A(:,6) + 1i*A(:,7);
             Ez = A(:,8) + 1i*A(:,9);
-            if isfield(S,'c')
+            %if isfield(S,'c')
                 I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez)) * S.c*S.n_interference*S.eps_0/2;
-            else
-                I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez));
-            end
+            %else
+            %    I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez));
+            %end
             %I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez)) .* GAoptions.gratingOptions.n_filled.*GAoptions.eps_0*GAoptions.c/2;
             %NEED TO FIGURE OUT HOW TO CONVERT S4 INTENSITY UNITS TO REAL UNITS1.0
             %I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez));
