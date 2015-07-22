@@ -363,8 +363,8 @@ delete([scriptFilename]);
             
             %Write strings to file and run:
             ef=fopen([GAoptions.dir,scriptFilename],'w');  %open/create file
-            fprintf(ef,[S.setBasicScript,S.setMaterialsScript,setLayerScript,excitationScript, setDataFilenameScript, S.collectDataScript]);
-            %fprintf(ef,[S.setBasicScript,S.setMaterialsScript,setLayerScript,excitationScript, setDataFilenameScript, S.collectDataScript, S.getAmplitudesScript]);
+            %fprintf(ef,[S.setBasicScript,S.setMaterialsScript,setLayerScript,excitationScript, setDataFilenameScript, S.collectDataScript]);
+            fprintf(ef,[S.setBasicScript,S.setMaterialsScript,setLayerScript,excitationScript, setDataFilenameScript, S.collectDataScript, S.getAmplitudesScript]);
             %fprintf(ef,[S.constScript1,varScript,S.constScript2,excitationScript,S.constScript3]);
             fclose(ef);
             
