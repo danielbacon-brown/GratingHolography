@@ -131,6 +131,7 @@ GAoptions.hostname = strtrim(hostname);
     gratingOptions.chromNspacingX = 8;
     gratingOptions.chromNspacingY = 8;
     gratingOptions.chromNSU8thickness = 8; 
+    gratingOptions.chromNITOthickness = 8;
     gratingOptions.n_filled = GAoptions.n_PR; %1.58;  %refractive index of grating material
     gratingOptions.n_void = GAoptions.n_gratingVoid;  %refractive index of void space of grating
     %gratingOptions.periodicity = 0.3928; %um %should give c=a
@@ -143,6 +144,8 @@ GAoptions.hostname = strtrim(hostname);
     gratingOptions.order = make_order(4, 'hexagonal');
     gratingOptions.SU8thicknessMax = 10; %um
     gratingOptions.SU8thicknessMin = 5; %um
+    gratingOptions.ITOthicknessMax = 0.3; %um
+    gratingOptions.ITOthicknessMin = 0.03; %um
     GAoptions.gratingOptions = gratingOptions;
     GAoptions.gratingFunction = GratingGridSquare(gratingOptions);
     disp(GAoptions.gratingFunction)
