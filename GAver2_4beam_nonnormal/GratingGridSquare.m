@@ -72,9 +72,10 @@ classdef GratingGridSquare
 %             thicknessChrom = chromosomeSection(1:G.chromNthickness);
 %             remainingChrom = chromosomeSection( (G.chromNthickness+1):end);
             
-            [thicknessChrom, spacingXchrom, spacingYchrom, cellArrChrom, SU8thicknessChrom ] = splitChromosome(chromosomeSection,  ...
-                [G.chromNthickness, G.chromNspacingX*(G.NblockX-1), G.chromNspacingY*(G.NblockX-1), G.chromNcellArr, G.chromNSU8thickness]);
-
+%             [thicknessChrom, spacingXchrom, spacingYchrom, cellArrChrom, SU8thicknessChrom ] = splitChromosome(chromosomeSection,  ...
+%                 [G.chromNthickness, G.chromNspacingX*(G.NblockX-1), G.chromNspacingY*(G.NblockX-1), G.chromNcellArr, G.chromNSU8thickness]);
+            [thicknessChrom, spacingXchrom, spacingYchrom, cellArrChrom ] = splitChromosome(chromosomeSection,  ...
+                [G.chromNthickness, G.chromNspacingX*(G.NblockX-1), G.chromNspacingY*(G.NblockX-1), G.chromNcellArr]);
 
             %Generate spacings of the grid
             A = G.NblockX;
@@ -151,14 +152,16 @@ classdef GratingGridSquare
                 end
             end
             
-            grating.SU8thickness = convertChrom_gc( SU8thicknessChrom, G.chromNSU8thickness)*(G.SU8thicknessMax-G.SU8thicknessMin) + G.SU8thicknessMin;
+            %grating.SU8thickness = convertChrom_gc( SU8thicknessChrom, G.chromNSU8thickness)*(G.SU8thicknessMax-G.SU8thicknessMin) + G.SU8thicknessMin;
+            %grating.ITOthickness = convertChrom_gc( ITOthicknessChrom, G.chromNITOthickness)*(G.ITOthicknessMax-G.ITOthicknessMin) + G.ITOthicknessMin;
             
         end
         
         
         
         function chromosomeSize = getChromosomeSize(G)
-            chromosomeSize = G.chromNthickness + G.chromNspacingX*(G.NblockX-1) + G.chromNspacingY*(G.NblockY-1) + G.chromNcellArr + G.chromNSU8thickness ;
+            %chromosomeSize = G.chromNthickness + G.chromNspacingX*(G.NblockX-1) + G.chromNspacingY*(G.NblockY-1) + G.chromNcellArr + G.chromNSU8thickness + G.chromNITOthickness;
+            chromosomeSize = G.chromNthickness + G.chromNspacingX*(G.NblockX-1) + G.chromNspacingY*(G.NblockY-1) + G.chromNcellArr;
         end
         
         

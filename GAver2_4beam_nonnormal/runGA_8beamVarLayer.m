@@ -1,4 +1,4 @@
-function runGA_8beamTransmit_helix
+function runGA_8beamVarLayer
 
 %GA version 2: modular code.
 %This runfile assumes a 4-beam symmetric configuration (no central mode/ non-normal incidence)
@@ -10,8 +10,8 @@ function runGA_8beamTransmit_helix
 GAoptions.hostname = strtrim(hostname);
 
 %%%%% Genetic Algorithm Options %%%%%
-    GAoptions.popSize = 200;
-    GAoptions.numGen = 50;
+    GAoptions.popSize = 6;
+    GAoptions.numGen = 2;
     GAoptions.elite = 1;
     GAoptions.numRepetitions = 1; %Number of times to repeat the GA
     %Options for built-in GA algorithm:
@@ -97,8 +97,8 @@ GAoptions.hostname = strtrim(hostname);
     GAoptions.C_over_A = 1;    %Max C/A for air gap is 0.578 %for PDMS prism, max C/A = 1.396
     GAoptions.lattice = 'square';
     GAoptions.n_PR = 1.58; %refractive index of the photoresist (SU8)
-    GAoptions.n_substrate = 1.505; %Glass slide as substrate
-    GAoptions.n_prism = 1.505; %glass prism   %PDMS prism (1.43)
+    GAoptions.n_substrate = 1.5; %Glass slide as substrate
+    GAoptions.n_prism = 1.5; %PDMS prism
     %GAoptions.n_prism = 1; %no prism
     GAoptions.n_gratingVoid = 1; %assuming vacuum-SU8 grating
     %This assumes the 4-beam symmetric configuration
@@ -112,6 +112,12 @@ GAoptions.hostname = strtrim(hostname);
     GAoptions.isAirGap = 0;
     
 
+
+    
+    
+    
+    
+    
     %%%%% Incident light %%%%%
     incidentLightOptions.wavelength = GAoptions.laserWavelength ;  %um
     incidentLightOptions.chromNpsi = 8;
@@ -126,12 +132,11 @@ GAoptions.hostname = strtrim(hostname);
 
 
 %For square GratingGrid
-    gratingOptions.NblockX = 4;
-    gratingOptions.NblockY = 4;
+    gratingOptions.NblockX = 3;
+    gratingOptions.NblockY = 3;
     gratingOptions.chromNspacingX = 8;
     gratingOptions.chromNspacingY = 8;
     gratingOptions.chromNSU8thickness = 8; 
-    gratingOptions.chromNITOthickness = 8;
     gratingOptions.n_filled = GAoptions.n_PR; %1.58;  %refractive index of grating material
     gratingOptions.n_void = GAoptions.n_gratingVoid;  %refractive index of void space of grating
     %gratingOptions.periodicity = 0.3928; %um %should give c=a
@@ -144,14 +149,15 @@ GAoptions.hostname = strtrim(hostname);
     gratingOptions.order = make_order(4, 'hexagonal');
     gratingOptions.SU8thicknessMax = 10; %um
     gratingOptions.SU8thicknessMin = 5; %um
-    gratingOptions.ITOthicknessMax = 0.3; %um
-    gratingOptions.ITOthicknessMin = 0.03; %um
     GAoptions.gratingOptions = gratingOptions;
     GAoptions.gratingFunction = GratingGridSquare(gratingOptions);
     disp(GAoptions.gratingFunction)
 
 
 
+
+    
+    
        
     %Note: for S4, the cells for u and v vectors need to be equal
     GAoptions.cells = floor(25*[1,1,GAoptions.C_over_A]);
@@ -230,14 +236,36 @@ GAoptions.hostname = strtrim(hostname);
     %GAoptions.fitnessFunction.targetstructure = 'helix_1to1';
     
     
-    %S4 layer data:
-    S4interfaceOptions.materialNames =   ['Vacuum',  'SU8',  'Prism',    'Glass',        'ITO'];
-    S4interfaceOptions.materialRI =      [1,         1.58,   n_prism,    n_substrate,    1.94-0.046i];      
+%     %S4 layer data:
+%     S4interfaceOptions.materialNames =   ['Vacuum',  'SU8',  'Prism',    'Glass',        'ITO'];
+%     S4interfaceOptions.materialRI =      [1,         1.58,   n_prism,    n_substrate,    1.94-0.046i];      
+%     
+%     S4interfaceOptions.layerNames =        ['Front',   'TCO',  'PR',   'Grating',  'Back'];
+%     S4interfaceOptions.layerMaterials =    ['Prism',   'ITO',  'SU8',  'Vacuum',   'Vacuum'];
+%     S4interfaceOptions.layerThicknesses =  [0,         0.1,    0,      0,          0];      
+%     
+
+    %%%%% Materials %%%%%
+    S4interfaceOptions.materialNames = { ...
+        'Vacuum', ...
+        'Glass', ...
+        'ITO', ...
+        'SU8'};
+    lengthout = length(S4interfaceOptions.materialNames)
+    S4interfaceOptions.materialRI = [ ...
+        1, ...
+        1.5, ...
+        1.94 - 0.046i, ...
+        1.58 ];
     
-    S4interfaceOptions.layerNames =        ['Front',   'TCO',  'PR',   'Grating',  'Back'];
-    S4interfaceOptions.layerMaterials =    ['Prism',   'ITO',  'SU8',  'Vacuum',   'Vacuum'];
-    S4interfaceOptions.layerThicknesses =  [0,         0.1,    0,      0,          0];      
-    
+    %%%%% Layers: %%%%%
+    chromNlayer = 8
+    S4interfaceOptions.layers(1) = Layer('Front','Glass',0);
+    S4interfaceOptions.layers(2) = Layer('TCO','ITO',-1,0.03,0.2,chromNlayer);
+    S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
+    S4interfaceOptions.layers(4) = Layer('Grating','Vacuum', -1, 0,gratingOptions.thicknessMax,chromNlayer); 
+    S4interfaceOptions.layers(5) = Layer('Back','Vacuum', 0);
+
 
     %Writer for S4 runfile
     S4interfaceOptions.dimensions = GAoptions.dimensions;
@@ -247,7 +275,9 @@ GAoptions.hostname = strtrim(hostname);
     S4interfaceOptions.gratingCoatingThickness  = 0.03; %um
     S4interfaceOptions.n_glass = GAoptions.n_substrate;
     S4interfaceOptions.n_prism = GAoptions.n_prism;
-    GAoptions.S4interface = S4interfaceSquareReflect2(S4interfaceOptions)
+    GAoptions.S4interface = S4interfaceSquareGeneral(S4interfaceOptions)
+    GAoptions.S4interfaceOptions = S4interfaceOptions;
+    %GAoptions.S4interface = S4interfaceSquareReflect2(S4interfaceOptions)
     %GAoptions.S4interface = S4interfaceSquareTransmit(S4interfaceOptions)
     
     %%%%% Do FDTD %%%%%
@@ -273,6 +303,12 @@ GAoptions.hostname = strtrim(hostname);
     GAoptions.sensSim = sensSim;
     
     
+    
+    %Get layer chromosome length
+    chromNlayer=0;
+    for i=1:length(GAoptions.S4interfaceOptions.layers)
+        chromNlayer=chromNlayer+GAoptions.S4interfaceOptions.layers(i).getChromosomeSize();
+    end
     %Creation of 'GAproblem' for built-in Matlab GA
     GAoptions.GAproblem.options = GAoptions.optimset;  %options set above
     GAoptions.GAproblem.nvars = ...
@@ -280,6 +316,7 @@ GAoptions.hostname = strtrim(hostname);
         + GAoptions.incidentLightFunction.getChromosomeSize()  ...
         ... + GAoptions.calcStructureFunction.getChromosomeSize() ...
         + GAoptions.offsetConductor.getChromosomeSize() ...
+        + chromNlayer ...
         ;
     GAoptions.GAproblem.fitnessfcn = @gfit;  %fitness function
     GAoptions.GAproblem.Aineq = [];  %A matrix for linear inequality constraints
@@ -302,7 +339,7 @@ toc
 % %DO BEST CHROMOSOME:
 % bestchrom = chromosome
 doPlots=1;
-fitness = fitnessFunction_8beamTransmit_helix(GAoptions,chromosome,doPlots) %Should also work for reflections
+fitness = fitnessFunction_8beamVarLayers(GAoptions,chromosome,doPlots) %Should also work for reflections
 
 
 
@@ -349,7 +386,7 @@ fitness = fitnessFunction_8beamTransmit_helix(GAoptions,chromosome,doPlots) %Sho
 %%%%% Declaration of Fitness Function %%%%%
     function fitness = gfit(chromosome)  %This is done so that it can pass GAoptions to the fitness function.
         tic
-        fitness = fitnessFunction_8beamTransmit_helix(GAoptions,chromosome)
+        fitness = fitnessFunction_8beamVarLayers(GAoptions,chromosome)
         toc 
 %         %Splits chromosome according to each module
 %         [gratingChromosome, incidentLightChromosome, offsetChromosome] = splitChromosome(chromosome,[ ...
