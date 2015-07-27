@@ -7,15 +7,21 @@ chromNlayer=0;
 for i=1:length(GAoptions.S4interfaceOptions.layers)
    chromNlayer=chromNlayer+GAoptions.S4interfaceOptions.layers(i).getChromosomeSize();
 end
+%Get material chromosome length
+chromNmaterial=0;
+for i=1:length(GAoptions.S4interfaceOptions.materials)
+   chromNmaterial=chromNmaterial+GAoptions.S4interfaceOptions.materials(i).getChromosomeSize();
+end
 
 %Splits chromosome according to each module
-[gratingChromosome ,incidentLightChromosome, offsetChromosome,layerChromosome ] = splitChromosome(chromosome,[ ...
+[gratingChromosome ,incidentLightChromosome, offsetChromosome,layerChromosome,materialsChromosome ] = splitChromosome(chromosome,[ ...
     GAoptions.gratingFunction.getChromosomeSize(), ...
     GAoptions.incidentLightFunction.getChromosomeSize(),  ...
     ...GAoptions.calcStructureFunction.getChromosomeSize() ...
     GAoptions.offsetConductor.getChromosomeSize(), ...
     chromNlayer ...
     ...sum(GAoptions.S4interfaceOptions.layers(:).getChromosomeSize()) ...
+    chromNmaterial ...
     ]);
 
 %Splits layer chromosome into 1 for each layer
@@ -27,6 +33,18 @@ for i_l = 1:length(GAoptions.S4interfaceOptions.layers)  %IF the layer has const
     else
         layerChromosomes{i_l} = layerChromosome( (u+1):(u+GAoptions.S4interfaceOptions.layers(i_l).getChromosomeSize()) );
         u = u + GAoptions.S4interfaceOptions.layers(i_l).getChromosomeSize();
+    end
+end
+
+%Splits layer chromosome into 1 for each layer
+materialChromosomes = cell(length(GAoptions.S4interfaceOptions.materials),1);
+u=0;
+for i_m = 1:length(GAoptions.S4interfaceOptions.materials)  %IF the layer has constant thickness, don't make a chromosome for it
+    if GAoptions.S4interfaceOptions.materials(i_m).constRI >= 0
+        materialChromosomes{i_l} = [];
+    else
+        materialChromosomes{i_l} = materialChromosome( (u+1):(u+GAoptions.S4interfaceOptions.materials(i_l).getChromosomeSize()) );
+        u = u + GAoptions.S4interfaceOptions.materials(i_l).getChromosomeSize();
     end
 end
 

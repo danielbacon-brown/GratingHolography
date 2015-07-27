@@ -246,20 +246,26 @@ GAoptions.hostname = strtrim(hostname);
 %     
 
     %%%%% Materials %%%%%
-    S4interfaceOptions.materialNames = { ...
-        'Vacuum', ...
-        'Glass', ...
-        'ITO', ...
-        'SU8'};
-    lengthout = length(S4interfaceOptions.materialNames)
-    S4interfaceOptions.materialRI = [ ...
-        1, ...
-        1.5, ...
-        1.94 - 0.046i, ...
-        1.58 ];
+    chromNmaterial = 8;
+    S4interfaceOptions.materials(1) = Material('Vacuum',1);
+    S4interfaceOptions.materials(2) = Material('Glass',-1,1.45,1.55,chromNmaterial);
+    S4interfaceOptions.materials(3) = Material('ITO',1.94-0.046i);
+    S4interfaceOptions.materials(4) = Material('SU8',1.58);
+            
+%     S4interfaceOptions.materialNames = { ...
+%         'Vacuum', ...
+%         'Glass', ...
+%         'ITO', ...
+%         'SU8'};
+%     %lengthout = length(S4interfaceOptions.materialNames)
+%     S4interfaceOptions.materialRI = [ ...
+%         1, ...
+%         1.5, ...
+%         1.94 - 0.046i, ...
+%         1.58 ];
     
     %%%%% Layers: %%%%%
-    chromNlayer = 8
+    chromNlayer = 8;
     S4interfaceOptions.layers(1) = Layer('Front','Glass',0);
     S4interfaceOptions.layers(2) = Layer('TCO','ITO',-1,0.03,0.2,chromNlayer);
     S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
@@ -271,8 +277,8 @@ GAoptions.hostname = strtrim(hostname);
     S4interfaceOptions.dimensions = GAoptions.dimensions;
     S4interfaceOptions.cells = GAoptions.cells;
     S4interfaceOptions.isAirGap = GAoptions.isAirGap;
-    S4interfaceOptions.gratingCoatingMetal = 'gold';
-    S4interfaceOptions.gratingCoatingThickness  = 0.03; %um
+    %S4interfaceOptions.gratingCoatingMetal = 'gold';
+    %S4interfaceOptions.gratingCoatingThickness  = 0.03; %um
     S4interfaceOptions.n_glass = GAoptions.n_substrate;
     S4interfaceOptions.n_prism = GAoptions.n_prism;
     GAoptions.S4interface = S4interfaceSquareGeneral(S4interfaceOptions)
@@ -309,6 +315,11 @@ GAoptions.hostname = strtrim(hostname);
     for i=1:length(GAoptions.S4interfaceOptions.layers)
         chromNlayer=chromNlayer+GAoptions.S4interfaceOptions.layers(i).getChromosomeSize();
     end
+    %Get material chromosome length
+    chromNmaterial=0;
+    for i=1:length(GAoptions.S4interfaceOptions.materials)
+        chromNmaterial=chromNmaterial+GAoptions.S4interfaceOptions.materials(i).getChromosomeSize();
+    end
     %Creation of 'GAproblem' for built-in Matlab GA
     GAoptions.GAproblem.options = GAoptions.optimset;  %options set above
     GAoptions.GAproblem.nvars = ...
@@ -317,6 +328,7 @@ GAoptions.hostname = strtrim(hostname);
         ... + GAoptions.calcStructureFunction.getChromosomeSize() ...
         + GAoptions.offsetConductor.getChromosomeSize() ...
         + chromNlayer ...
+        + chromNmaterial ...
         ;
     GAoptions.GAproblem.fitnessfcn = @gfit;  %fitness function
     GAoptions.GAproblem.Aineq = [];  %A matrix for linear inequality constraints
