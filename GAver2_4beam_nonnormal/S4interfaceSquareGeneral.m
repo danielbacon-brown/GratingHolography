@@ -12,11 +12,11 @@ classdef S4interfaceSquareGeneral
         %n_metal;
         %k_metal;
         gratingCoatingThickness;
-        isAirGap;
+        %isAirGap;
         setBasicScript;
-        setMaterialsScript;
-        setFrontLayersScript;
-        setBackLayersScript;
+        %setMaterialsScript;
+        %setFrontLayersScript;
+        %setBackLayersScript;
         collectDataScript;
         getAmplitudesScript;
         c;
@@ -32,7 +32,7 @@ classdef S4interfaceSquareGeneral
             S.n_interference = 1.58;
             S.eps_0 = 8.854e-12; %vacuum permittivity %F/m 
             
-            S.isAirGap = options.isAirGap;
+            %S.isAirGap = options.isAirGap;
             
             S.cells = options.cells;
             S.dimensions = options.dimensions;
@@ -75,9 +75,9 @@ classdef S4interfaceSquareGeneral
             
             %Define materials
             %setMaterialsScript = '';
-            n_TCO = 1.94; %ITO  %ITO: 1.94 at 532nm   --AZO: 1.89 at 532nm   --FTO: ~2
-            k_TCO = 0.046;
-            n_glass = options.n_glass; %MAKE VARIABLE?
+            %n_TCO = 1.94; %ITO  %ITO: 1.94 at 532nm   --AZO: 1.89 at 532nm   --FTO: ~2
+            %k_TCO = 0.046;
+            %n_glass = options.n_glass; %MAKE VARIABLE?
             
 %             S.setMaterialsScript = [ ...
 %                 'S:AddMaterial("Vacuum", {1,0}) \r\n' ...
@@ -94,18 +94,18 @@ classdef S4interfaceSquareGeneral
 %                 , 'S:AddMaterial("Prism", {n_prism^2,0}) \r\n' ...
 %                 ];
             
-            %Set Materials:
-            S.setMaterialsScript = '';
-            for i_m = 1:length(options.materialNames)
-                n = real(options.materialRI(i_m));
-                k = imag(options.materialRI(i_m));
-                S.setMaterialsScript = [ S.setMaterialsScript, ...
-                    sprintf('S:AddMaterial(''%s'', {%2.5f,%2.5f}) \r\n', ...
-                    options.materialNames{i_m}, ...
-                    n^2-k^2, ...
-                    2*n*k ) ...
-                    ];
-            end
+%             %Set Materials:
+%             S.setMaterialsScript = '';
+%             for i_m = 1:length(options.materials)
+%                 [n,k] = options.material(i_m).getRI(materialChromosome);
+%                 k = imag(options.materialRI(i_m));
+%                 S.setMaterialsScript = [ S.setMaterialsScript, ...
+%                     sprintf('S:AddMaterial(''%s'', {%2.5f,%2.5f}) \r\n', ...
+%                     options.materialNames{i_m}, ...
+%                     n^2-k^2, ...
+%                     2*n*k ) ...
+%                     ];
+%             end
             
             
 %             %For reflection grating(2), the layer order is: prism, glass
@@ -217,7 +217,7 @@ classdef S4interfaceSquareGeneral
             
         end
         
-        function intensityDist = doRCWA(S,GAoptions,grating,incidentFieldParams,layerChromosomes)
+        function intensityDist = doRCWA(S,GAoptions,grating,incidentFieldParams,layerChromosomes,materialChromosomes)
             
             %Use worker ID to different files intended for different
             %workers
@@ -236,7 +236,7 @@ classdef S4interfaceSquareGeneral
                 dataFilename = 'fieldData'
                 scriptFilename = 'automatedS4script.lua'
             end
-            makeRunScript(S,GAoptions,grating,incidentFieldParams, dataFilename,scriptFilename,layerChromosomes); %Make script
+            makeRunScript(S,GAoptions,grating,incidentFieldParams, dataFilename,scriptFilename,layerChromosomes,materialChromosomes); %Make script
             
             if strcmp(GAoptions.hostname,'Daniel-netbook')
                 system(['C:/Users/daniel/S4-1.1.1-win32/S4 ', GAoptions.dir,scriptFilename]); %Run script
@@ -254,42 +254,27 @@ classdef S4interfaceSquareGeneral
             delete([GAoptions.dir,dataFilename,'.H']);
 delete([scriptFilename]);
             
-            %sizeA = size(A)
             
             Ex = A(:,4) + 1i*A(:,5);
-            %sizeEx = size(Ex)
             Ey = A(:,6) + 1i*A(:,7);
             Ez = A(:,8) + 1i*A(:,9);
             I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez)) * S.c*S.n_interference*S.eps_0/2;
-            %I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez)) .* GAoptions.gratingOptions.n_filled.*GAoptions.eps_0*GAoptions.c/2;
-            %NEED TO FIGURE OUT HOW TO CONVERT S4 INTENSITY UNITS TO REAL UNITS1.0
-            %I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez));
-            %sizeIlinear = size(I_linear)
-            %Need to permute dimensions because S4 outputs adjusting y, then x, then z
             I = reshape(I_linear, S.cells(2),S.cells(1),[]);
-            %sizeIr = size(I)
             intensityDist = permute(I,[2,1,3]);
-            %sizeId = size(intensityDist)
             
             
         end
         
         
         
-        function makeRunScript(S,GAoptions,grating,incidentFieldParams,dataFilename,scriptFilename,layerChromosomes)
+        function makeRunScript(S,GAoptions,grating,incidentFieldParams,dataFilename,scriptFilename,layerChromosomes,materialChromosomes)
             strat = grating.stratum{1,1};
             
             periodX = grating.d21;
             periodY = grating.d32;
             
-            %varScript = '';
-            %Define grating thickness:
-            %varScript = [varScript, 'S:AddLayer(''Grating'',', num2str(strat.thick), ', ''Vacuum'')  --grating layer (vacuum is background) \r\n'];
-            
-            %Assumes there is no metal deposition on sidewalls
 
-            
-%            save('lastgrating.mat', 'grating')
+  
             
             
             %Set Layers:
@@ -303,10 +288,19 @@ delete([scriptFilename]);
                     ];
             end
 
-%             setLayersScript = [ ...
-%                 sprintf('S:AddLayer(''PrInterference'', %2.3f, ''SU8'')  -- thick SU8 layer \r\n', grating.SU8thickness) ...
-%                 , sprintf('S:AddLayer(''SU8AirGrating'', %1.6f, ''Vacuum'')  --first grating layer \r\n', strat.thick) ...
-%             ];
+            %Set Materials:
+            setMaterialsScript = '';
+            for i_m = 1:length(GAoptions.S4interfaceOptions.materials)
+                [n,k] = GAoptions.S4interfaceOptions.materials(i_m).getRI( materialChromosomes{i_m} );
+                setMaterialsScript = [ setMaterialsScript, ...
+                    sprintf('S:AddMaterial(''%s'', {%2.5f,%2.5f}) \r\n', ...
+                        GAoptions.S4interfaceOptions.materials(i_m).materialName, ...
+                        n^2-k^2, ...
+                        2*n*k ) ...
+                    ];
+            end
+            
+            
             
             %Define block dimensions and positions:
  %           vertOffset = -periodX;  %Need to shift the block positions up and to the right as you move up in stripe#
@@ -364,7 +358,7 @@ delete([scriptFilename]);
             %Write strings to file and run:
             ef=fopen([GAoptions.dir,scriptFilename],'w');  %open/create file
             %fprintf(ef,[S.setBasicScript,S.setMaterialsScript,setLayerScript,excitationScript, setDataFilenameScript, S.collectDataScript]);
-            fprintf(ef,[S.setBasicScript,S.setMaterialsScript,setLayerScript,excitationScript, setDataFilenameScript, S.collectDataScript, S.getAmplitudesScript]);
+            fprintf(ef,[S.setBasicScript,setMaterialsScript,setLayerScript,excitationScript, setDataFilenameScript, S.collectDataScript, S.getAmplitudesScript]);
             %fprintf(ef,[S.constScript1,varScript,S.constScript2,excitationScript,S.constScript3]);
             fclose(ef);
             

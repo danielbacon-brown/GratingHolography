@@ -1,7 +1,7 @@
 classdef Material
     
     properties
-        MaterialName;
+        materialName;
         constRI; % <0  =>  constant thickness
         RIMin;
         RIMax;
@@ -15,9 +15,9 @@ classdef Material
                 M.RIMin = RIMin;
                 M.RIMax = RIMax;
                 M.chromNRI = chromNRI;
-                M.MaterialName = materialName;
+                M.materialName = materialName;
             else %constant thickness
-                M.MaterialName = materialName;
+                M.materialName = materialName;
                 M.constRI = constRI;
                 M.chromNRI = 0;
             end
@@ -29,7 +29,7 @@ classdef Material
         end
         
         function [n,k] = getRI(M,chromosome)
-            if M.constThick >= 0
+            if M.constRI >= 0
                 n = real(M.constRI);
                 k = imag(M.constRI);
             else

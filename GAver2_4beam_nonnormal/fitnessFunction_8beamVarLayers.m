@@ -14,7 +14,7 @@ for i=1:length(GAoptions.S4interfaceOptions.materials)
 end
 
 %Splits chromosome according to each module
-[gratingChromosome ,incidentLightChromosome, offsetChromosome,layerChromosome,materialsChromosome ] = splitChromosome(chromosome,[ ...
+[gratingChromosome ,incidentLightChromosome, offsetChromosome,layerChromosome,materialChromosome ] = splitChromosome(chromosome,[ ...
     GAoptions.gratingFunction.getChromosomeSize(), ...
     GAoptions.incidentLightFunction.getChromosomeSize(),  ...
     ...GAoptions.calcStructureFunction.getChromosomeSize() ...
@@ -41,10 +41,10 @@ materialChromosomes = cell(length(GAoptions.S4interfaceOptions.materials),1);
 u=0;
 for i_m = 1:length(GAoptions.S4interfaceOptions.materials)  %IF the layer has constant thickness, don't make a chromosome for it
     if GAoptions.S4interfaceOptions.materials(i_m).constRI >= 0
-        materialChromosomes{i_l} = [];
+        materialChromosomes{i_m} = [];
     else
-        materialChromosomes{i_l} = materialChromosome( (u+1):(u+GAoptions.S4interfaceOptions.materials(i_l).getChromosomeSize()) );
-        u = u + GAoptions.S4interfaceOptions.materials(i_l).getChromosomeSize();
+        materialChromosomes{i_m} = materialChromosome( (u+1):(u+GAoptions.S4interfaceOptions.materials(i_m).getChromosomeSize()) )
+        u = u + GAoptions.S4interfaceOptions.materials(i_m).getChromosomeSize();
     end
 end
 
@@ -84,7 +84,7 @@ end
 % %intensityDist = GAoptions.calcStructureFunction.calcIntensity( E231,k231,GAoptions.dimensions,GAoptions.cells,offsetChromosome);
 
 %Do RCWA analysis with S4:
-intensityDist = GAoptions.S4interface.doRCWA(GAoptions,grating,incidentFieldParams,layerChromosomes);  %Note: this intensityDist is based on a hexagonal parallelogram
+intensityDist = GAoptions.S4interface.doRCWA(GAoptions,grating,incidentFieldParams,layerChromosomes,materialChromosomes);  %Note: this intensityDist is based on a hexagonal parallelogram
 if length(intensityDist)<1  %If the RCWA failed, return bad fitness and move on
    fitness = 10;
    return;
@@ -162,14 +162,12 @@ if exist('doPlots','var') %Plot simulated structure
     %DO SMOOTHING//DIFFUSION (WITH SUMMING)
     diffRate = 5;
     smoothed = zeros([size(acidCount),8]);
-    sizesmoothedout= size(smoothed)
     smoothed(:,:,:,1) = smooth3(acidCount,'gaussian',diffRate);
     for smooth_i = 2:size(smoothed,4)
         smoothed(:,:,:,smooth_i) = smooth3(smoothed(:,:,:,smooth_i-1),'gaussian',diffRate);
         disp(smooth_i)
     end
     crosslinkCount = sum(smoothed,4);
-    sizesmoothedout= size(crosslinkCount)
     crosslinkThreshold = fixfill(crosslinkCount, 256, GAoptions.fill)
     figure
     patched = patch(isosurface(padarray(crosslinkCount,[1,1,1],100),crosslinkThreshold));

@@ -97,7 +97,7 @@ GAoptions.hostname = strtrim(hostname);
     GAoptions.C_over_A = 1;    %Max C/A for air gap is 0.578 %for PDMS prism, max C/A = 1.396
     GAoptions.lattice = 'square';
     GAoptions.n_PR = 1.58; %refractive index of the photoresist (SU8)
-    GAoptions.n_substrate = 1.5; %Glass slide as substrate
+    %GAoptions.n_substrate = 1.5; %Glass slide as substrate
     GAoptions.n_prism = 1.5; %PDMS prism
     %GAoptions.n_prism = 1; %no prism
     GAoptions.n_gratingVoid = 1; %assuming vacuum-SU8 grating
@@ -276,11 +276,11 @@ GAoptions.hostname = strtrim(hostname);
     %Writer for S4 runfile
     S4interfaceOptions.dimensions = GAoptions.dimensions;
     S4interfaceOptions.cells = GAoptions.cells;
-    S4interfaceOptions.isAirGap = GAoptions.isAirGap;
+    %S4interfaceOptions.isAirGap = GAoptions.isAirGap;
     %S4interfaceOptions.gratingCoatingMetal = 'gold';
     %S4interfaceOptions.gratingCoatingThickness  = 0.03; %um
-    S4interfaceOptions.n_glass = GAoptions.n_substrate;
-    S4interfaceOptions.n_prism = GAoptions.n_prism;
+    %S4interfaceOptions.n_glass = GAoptions.n_substrate;
+    %S4interfaceOptions.n_prism = GAoptions.n_prism;
     GAoptions.S4interface = S4interfaceSquareGeneral(S4interfaceOptions)
     GAoptions.S4interfaceOptions = S4interfaceOptions;
     %GAoptions.S4interface = S4interfaceSquareReflect2(S4interfaceOptions)
@@ -318,7 +318,7 @@ GAoptions.hostname = strtrim(hostname);
     %Get material chromosome length
     chromNmaterial=0;
     for i=1:length(GAoptions.S4interfaceOptions.materials)
-        chromNmaterial=chromNmaterial+GAoptions.S4interfaceOptions.materials(i).getChromosomeSize();
+        chromNmaterial=chromNmaterial+GAoptions.S4interfaceOptions.materials(i).getChromosomeSize()
     end
     %Creation of 'GAproblem' for built-in Matlab GA
     GAoptions.GAproblem.options = GAoptions.optimset;  %options set above
