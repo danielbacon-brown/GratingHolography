@@ -10,8 +10,8 @@ function runGA_8beamVarLayer
 GAoptions.hostname = strtrim(hostname);
 
 %%%%% Genetic Algorithm Options %%%%%
-    GAoptions.popSize = 300;
-    GAoptions.numGen = 25;
+    GAoptions.popSize = 6;
+    GAoptions.numGen = 2;
     GAoptions.elite = 1;
     GAoptions.numRepetitions = 1; %Number of times to repeat the GA
     %Options for built-in GA algorithm:
@@ -95,22 +95,33 @@ GAoptions.hostname = strtrim(hostname);
     %%%%%% Lattice Dimensions %%%%%
     GAoptions.laserWavelength = 0.532; %um
     GAoptions.C_over_A = 0.75;    %Max C/A for air gap is 0.578 %for PDMS prism, max C/A = 1.396
-    GAoptions.lattice = 'square';
+    %GAoptions.lattice = 'square';
+    GAoptions.lattice = 'hexagonal';
     GAoptions.n_PR = 1.58; %refractive index of the photoresist (SU8)
-    GAoptions.n_substrate = 1.5; %Glass slide as substrate
-    GAoptions.n_prism = 1.5; %PDMS prism
+    GAoptions.n_substrate = 1.52;   %Glass slide as substrate
+    %GAoptions.n_prism = 1.5; %glass prism
     %GAoptions.n_prism = 1; %no prism
     GAoptions.n_gratingVoid = 1; %assuming vacuum-SU8 grating
     %This assumes the 4-beam symmetric configuration
-    GAoptions.period = GAoptions.laserWavelength/(2*GAoptions.n_PR) * sqrt(2+1/(GAoptions.C_over_A^2))
+    if strcmp(GAoptions.lattice, 'square')
+        GAoptions.period = GAoptions.laserWavelength/(2*GAoptions.n_PR) * sqrt(2+1/(GAoptions.C_over_A^2))
+    elseif strcmp(GAoptions.lattice, 'hexagonal')
+        %GAoptions.period =   GAoptions.laserWavelength/GAoptions.n_PR * (GAoptions.C_over_A/3 + 1/GAoptions.C_over_A); %%%% GAoptions.laserWavelength/(2*GAoptions.n_PR) * sqrt(2+1/(GAoptions.C_over_A^2))
+        GAoptions.period =   GAoptions.laserWavelength/GAoptions.n_PR * sqrt( 1/3 + 1/4 * 1/GAoptions.C_over_A^2);
+    end
     GAoptions.cells = floor(25*[1,1,GAoptions.C_over_A]); %number of 'ticks' in each dimension
     GAoptions.dimensions = [GAoptions.period, GAoptions.period, GAoptions.period*GAoptions.C_over_A]; %dimensions of unit cell
     %Vectors describing periodicity:
-    GAoptions.u = [GAoptions.period,0,0];
-    GAoptions.v = [0,GAoptions.period,0];
-    GAoptions.w = [0,0,GAoptions.period*GAoptions.C_over_A];
-    GAoptions.isAirGap = 0;
-    
+    if strcmp(GAoptions.lattice, 'square')
+        GAoptions.u = [GAoptions.period,0,0];
+        GAoptions.v = [0,GAoptions.period,0];
+        GAoptions.w = [0,0,GAoptions.period*GAoptions.C_over_A];
+    elseif strcmp(GAoptions.lattice, 'hexagonal')
+        GAoptions.u = [GAoptions.period,0,0];
+        GAoptions.v = [GAoptions.period/2,GAoptions.period*sqrt(3)/2,0];
+        GAoptions.w = [0,0,GAoptions.period*GAoptions.C_over_A];
+    end
+    %GAoptions.isAirGap = 0;
 
 
     
@@ -120,16 +131,17 @@ GAoptions.hostname = strtrim(hostname);
     
     %%%%% Incident light %%%%%
     incidentLightOptions.wavelength = GAoptions.laserWavelength ;  %um
+    incidentLightOptions.lattice = GAoptions.lattice;
     incidentLightOptions.chromNpsi = 8;
     incidentLightOptions.chromNchi = 8;
     incidentLightOptions.n_interference = GAoptions.n_PR;
-    incidentLightOptions.n_incidence = GAoptions.n_prism; %The refractive index of the material that the plane wave is in
+    incidentLightOptions.n_incidence = GAoptions.n_substrate; %The refractive index of the material that the plane wave is in
     incidentLightOptions.period = GAoptions.period;
     incidentLightOptions.C_over_A = GAoptions.C_over_A;
     incidentLightOptions.beamPowerDens = 20935  %W/m^2      %=20935W/m^2
     GAoptions.incidentLightOptions = incidentLightOptions;
-    GAoptions.incidentLightFunction = IncidentLightAngled4BeamSymmetric(incidentLightOptions);
-
+    %GAoptions.incidentLightFunction = IncidentLightAngled4BeamSymmetric(incidentLightOptions);
+    GAoptions.incidentLightFunction = IncidentLightAngled(incidentLightOptions);
 
 %For square GratingGrid
     gratingOptions.NblockX = 3;
@@ -143,14 +155,18 @@ GAoptions.hostname = strtrim(hostname);
     %gratingOptions.periodicity = 0.5334; %um should give c=a*2
     gratingOptions.C_over_A = GAoptions.C_over_A;
     gratingOptions.periodicity = GAoptions.period; %getA(gratingOptions.c_over_a, gratingOptions.n_filled, incidentLightOptions.wavelength) * gratingOptions.n_filled/gratingOptions.n_void;  %Need to scale by refractive index because of critical angle at air-SU8 interface
-    gratingOptions.chromNthickness = 8;  %Number of chromosome positions for each variable
-    gratingOptions.thicknessMax = 0.3; %Maximum thickness of grating %um
-    gratingOptions.spacingMin = 0.2; %Minimum block width 
-    gratingOptions.order = make_order(4, 'hexagonal');
-    gratingOptions.SU8thicknessMax = 10; %um
-    gratingOptions.SU8thicknessMin = 5; %um
+    %gratingOptions.chromNthickness = 8;  %Number of chromosome positions for each variable
+    %gratingOptions.thicknessMax = 0.3; %Maximum thickness of grating %um
+    gratingOptions.spacingMin = 0.2; %Minimum block width %relative to periodicity
+    %gratingOptions.order = make_order(4, 'hexagonal');
+    %gratingOptions.SU8thicknessMax = 10; %um
+    %gratingOptions.SU8thicknessMin = 5; %um
     GAoptions.gratingOptions = gratingOptions;
-    GAoptions.gratingFunction = GratingGridSquare(gratingOptions);
+    if strcmp(GAoptions.lattice, 'square')
+        GAoptions.gratingFunction = GratingGridSquare(gratingOptions);
+    elseif strcmp(GAoptions.lattice, 'hexagonal')
+        GAoptions.gratingFunction = GratingGridHexagonal(gratingOptions);
+    end
     disp(GAoptions.gratingFunction)
 
 
@@ -162,8 +178,13 @@ GAoptions.hostname = strtrim(hostname);
     %Note: for S4, the cells for u and v vectors need to be equal
     GAoptions.cells = floor(25*[1,1,GAoptions.C_over_A]);
 
-    GAoptions.dimensions = [GAoptions.period, GAoptions.period, GAoptions.period*GAoptions.C_over_A];
+    if strcmp(GAoptions.lattice,'square')
+        GAoptions.dimensions = [GAoptions.period, GAoptions.period, GAoptions.period*GAoptions.C_over_A];
+    elseif strcmp(GAoptions.lattice,'hexagonal')
+        GAoptions.dimensions = [GAoptions.period, GAoptions.period*sqrt(3)/2, GAoptions.period*GAoptions.C_over_A];
+    end
 
+    
     %%%%% Target Structure %%%%%
     %targetStructureOptions.cells = [40,floor(40*sqrt(3)/2), 40];  %c=a
     %targetStructureOptions.cells = [40,floor(40*sqrt(3)/2), 40*1.4]; c=a*1.4
@@ -178,7 +199,7 @@ GAoptions.hostname = strtrim(hostname);
     targetStructureOptions.u = GAoptions.u;
     targetStructureOptions.v = GAoptions.v;
     targetStructureOptions.w = GAoptions.w;
-    targetStructureOptions.radb = GAoptions.period/4; %radius / distance of middle of helix to axis (um)
+    targetStructureOptions.radb = GAoptions.period/5; %radius / distance of middle of helix to axis (um)
     targetStructureOptions.radl = GAoptions.period/8; %radius of the wire (um)
     targetStructureOptions.relativeZ = GAoptions.C_over_A; %ratio of height to width of ellipsoidal 'pen'
     GAoptions.targetStructureOptions = targetStructureOptions;
@@ -192,7 +213,7 @@ GAoptions.hostname = strtrim(hostname);
     exclusionStructureOptions.u = GAoptions.u;
     exclusionStructureOptions.v = GAoptions.v;
     exclusionStructureOptions.w = GAoptions.w;
-    exclusionStructureOptions.radb = GAoptions.period/4;
+    exclusionStructureOptions.radb = GAoptions.period/5;
     exclusionStructureOptions.radl = GAoptions.period/4;
     exclusionStructureOptions.relativeZ = GAoptions.C_over_A;  %ratio of height to width of ellipsoidal 'pen'
     GAoptions.exclusionStructureOptions = exclusionStructureOptions;
@@ -246,35 +267,42 @@ GAoptions.hostname = strtrim(hostname);
 %     
 
     %%%%% Materials %%%%%
-    S4interfaceOptions.materialNames = { ...
-        'Vacuum', ...
-        'Glass', ...
-        'ITO', ...
-        'SU8'};
-    lengthout = length(S4interfaceOptions.materialNames)
-    S4interfaceOptions.materialRI = [ ...
-        1, ...
-        1.5, ...
-        1.94 + 0.046i, ...
-        1.58 ];
+    chromNmaterial = 8;
+    S4interfaceOptions.materials(1) = Material('Vacuum',1);
+    S4interfaceOptions.materials(2) = Material('Glass',-1,1.47,1.52,chromNmaterial);
+    S4interfaceOptions.materials(3) = Material('ITO',1.94-0.046i);
+    S4interfaceOptions.materials(4) = Material('SU8',1.58);
+            
+%     S4interfaceOptions.materialNames = { ...
+%         'Vacuum', ...
+%         'Glass', ...
+%         'ITO', ...
+%         'SU8'};
+%     %lengthout = length(S4interfaceOptions.materialNames)
+%     S4interfaceOptions.materialRI = [ ...
+%         1, ...
+%         1.5, ...
+%         1.94 - 0.046i, ...
+%         1.58 ];
     
-    %%%%% Layers: %%%%%
-    chromNlayer = 8
+    %%%%% Layers: %%%%%    
+    chromNlayer = 8;
     S4interfaceOptions.layers(1) = Layer('Front','Glass',0);
-    S4interfaceOptions.layers(2) = Layer('TCO','ITO',-1,0.03,0.2,chromNlayer);
+    S4interfaceOptions.layers(2) = Layer('TCO','ITO',-1,0.015,0.15,chromNlayer);
     S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
-    S4interfaceOptions.layers(4) = Layer('Grating','Vacuum', -1, 0,gratingOptions.thicknessMax,chromNlayer); 
+    S4interfaceOptions.layers(4) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer); 
     S4interfaceOptions.layers(5) = Layer('Back','Vacuum', 0);
 
 
     %Writer for S4 runfile
     S4interfaceOptions.dimensions = GAoptions.dimensions;
     S4interfaceOptions.cells = GAoptions.cells;
-    S4interfaceOptions.isAirGap = GAoptions.isAirGap;
-    S4interfaceOptions.gratingCoatingMetal = 'gold';
-    S4interfaceOptions.gratingCoatingThickness  = 0.03; %um
-    S4interfaceOptions.n_glass = GAoptions.n_substrate;
-    S4interfaceOptions.n_prism = GAoptions.n_prism;
+    S4interfaceOptions.lattice = GAoptions.lattice;
+    %S4interfaceOptions.isAirGap = GAoptions.isAirGap;
+    %S4interfaceOptions.gratingCoatingMetal = 'gold';
+    %S4interfaceOptions.gratingCoatingThickness  = 0.03; %um
+    %S4interfaceOptions.n_glass = GAoptions.n_substrate;
+    %S4interfaceOptions.n_prism = GAoptions.n_prism;
     GAoptions.S4interface = S4interfaceSquareGeneral(S4interfaceOptions)
     GAoptions.S4interfaceOptions = S4interfaceOptions;
     %GAoptions.S4interface = S4interfaceSquareReflect2(S4interfaceOptions)
@@ -309,6 +337,11 @@ GAoptions.hostname = strtrim(hostname);
     for i=1:length(GAoptions.S4interfaceOptions.layers)
         chromNlayer=chromNlayer+GAoptions.S4interfaceOptions.layers(i).getChromosomeSize();
     end
+    %Get material chromosome length
+    chromNmaterial=0;
+    for i=1:length(GAoptions.S4interfaceOptions.materials)
+        chromNmaterial=chromNmaterial+GAoptions.S4interfaceOptions.materials(i).getChromosomeSize()
+    end
     %Creation of 'GAproblem' for built-in Matlab GA
     GAoptions.GAproblem.options = GAoptions.optimset;  %options set above
     GAoptions.GAproblem.nvars = ...
@@ -317,6 +350,7 @@ GAoptions.hostname = strtrim(hostname);
         ... + GAoptions.calcStructureFunction.getChromosomeSize() ...
         + GAoptions.offsetConductor.getChromosomeSize() ...
         + chromNlayer ...
+        + chromNmaterial ...
         ;
     GAoptions.GAproblem.fitnessfcn = @gfit;  %fitness function
     GAoptions.GAproblem.Aineq = [];  %A matrix for linear inequality constraints

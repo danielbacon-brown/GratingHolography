@@ -12,11 +12,11 @@ classdef S4interfaceSquareGeneral
         %n_metal;
         %k_metal;
         gratingCoatingThickness;
-        isAirGap;
+        %isAirGap;
         setBasicScript;
-        setMaterialsScript;
-        setFrontLayersScript;
-        setBackLayersScript;
+        %setMaterialsScript;
+        %setFrontLayersScript;
+        %setBackLayersScript;
         collectDataScript;
         getAmplitudesScript;
         c;
@@ -32,7 +32,7 @@ classdef S4interfaceSquareGeneral
             S.n_interference = 1.58;
             S.eps_0 = 8.854e-12; %vacuum permittivity %F/m 
             
-            S.isAirGap = options.isAirGap;
+            %S.isAirGap = options.isAirGap;
             
             S.cells = options.cells;
             S.dimensions = options.dimensions;
@@ -54,11 +54,20 @@ classdef S4interfaceSquareGeneral
             
             
             %cs = [cs, 'time1 = os.clock() \r\n'];
+            
+            if strcmp(options.lattice,'square')
+                latticeStr = sprintf( 'S:SetLattice({%1.5f,%1.5f},{%1.5f,%1.5f}) \r\n',periodX,0,0,periodY)
+            elseif strcmp(options.lattice,'hexagonal')
+                latticeStr = sprintf( 'S:SetLattice({%1.5f,%1.5f},{%1.5f,%1.5f}) \r\n',periodX,0,periodX/2,periodY)
+            end
+            
             S.setBasicScript = [ ...
                 'S = S4.NewSimulation() \r\n' ...
                 ...%Define periodicity
-                , sprintf( 'S:SetLattice({%1.5f,%1.5f},{%1.5f,%1.5f}) \r\n',periodX,0,0,periodY) ...
-                , 'S:SetNumG(9) \r\n' ...
+                ..., sprintf( 'S:SetLattice({%1.5f,%1.5f},{%1.5f,%1.5f}) \r\n',periodX,0,0,periodY) ...
+                , latticeStr ...
+...                , 'S:SetNumG(9) \r\n' ...
+, 'S:SetNumG(20) \r\n' ...
                 , 'S:SetResolution(16) \r\n' ...
                 , 'S:UseDiscretizedEpsilon(1) \r\n' ...
                 ...%fprintf(ef, 'S:UseLanczosSmoothing(1) \n');
@@ -75,9 +84,9 @@ classdef S4interfaceSquareGeneral
             
             %Define materials
             %setMaterialsScript = '';
-            n_TCO = 1.94; %ITO  %ITO: 1.94 at 532nm   --AZO: 1.89 at 532nm   --FTO: ~2
-            k_TCO = 0.046;
-            n_glass = options.n_glass; %MAKE VARIABLE?
+            %n_TCO = 1.94; %ITO  %ITO: 1.94 at 532nm   --AZO: 1.89 at 532nm   --FTO: ~2
+            %k_TCO = 0.046;
+            %n_glass = options.n_glass; %MAKE VARIABLE?
             
 %             S.setMaterialsScript = [ ...
 %                 'S:AddMaterial("Vacuum", {1,0}) \r\n' ...
@@ -94,18 +103,18 @@ classdef S4interfaceSquareGeneral
 %                 , 'S:AddMaterial("Prism", {n_prism^2,0}) \r\n' ...
 %                 ];
             
-            %Set Materials:
-            S.setMaterialsScript = '';
-            for i_m = 1:length(options.materialNames)
-                n = real(options.materialRI(i_m));
-                k = imag(options.materialRI(i_m));
-                S.setMaterialsScript = [ S.setMaterialsScript, ...
-                    sprintf('S:AddMaterial(''%s'', {%2.5f,%2.5f}) \r\n', ...
-                    options.materialNames{i_m}, ...
-                    n^2-k^2, ...
-                    2*n*k ) ...
-                    ];
-            end
+%             %Set Materials:
+%             S.setMaterialsScript = '';
+%             for i_m = 1:length(options.materials)
+%                 [n,k] = options.material(i_m).getRI(materialChromosome);
+%                 k = imag(options.materialRI(i_m));
+%                 S.setMaterialsScript = [ S.setMaterialsScript, ...
+%                     sprintf('S:AddMaterial(''%s'', {%2.5f,%2.5f}) \r\n', ...
+%                     options.materialNames{i_m}, ...
+%                     n^2-k^2, ...
+%                     2*n*k ) ...
+%                     ];
+%             end
             
             
 %             %For reflection grating(2), the layer order is: prism, glass
@@ -191,6 +200,13 @@ classdef S4interfaceSquareGeneral
                 , 'for key,value in pairs(forw) do print(forw[key][1], forw[key][2]) end \n'...
                 , 'print(''backward waves:'') \n'...
                 , 'for key,value in pairs(back) do print(back[key][1], back[key][2]) end \n'...
+                , 'print(''Num G: '') \n' ...
+                , 'ng = S:GetNumG() \n' ...
+                , 'print(ng) \n'...
+                , 'print(''G list: '') \n' ...
+                , 'glist = S:GetGList() \n'...
+                , 'for key,value in pairs(glist) do print(glist[key][1], glist[key][2]) end \n'...
+                , 'S:OutputStructurePOVRay(''HelixPOVrayScript.pov'') \n ' ...
                 ];
             %cs2 = [cs2, 'time3 = os.clock() \n' );
             
@@ -217,7 +233,7 @@ classdef S4interfaceSquareGeneral
             
         end
         
-        function intensityDist = doRCWA(S,GAoptions,grating,incidentFieldParams,layerChromosomes)
+        function intensityDist = doRCWA(S,GAoptions,grating,incidentFieldParams,layerChromosomes,materialChromosomes)
             
             %Use worker ID to different files intended for different
             %workers
@@ -236,7 +252,7 @@ classdef S4interfaceSquareGeneral
                 dataFilename = 'fieldData'
                 scriptFilename = 'automatedS4script.lua'
             end
-            makeRunScript(S,GAoptions,grating,incidentFieldParams, dataFilename,scriptFilename,layerChromosomes); %Make script
+            makeRunScript(S,GAoptions,grating,incidentFieldParams, dataFilename,scriptFilename,layerChromosomes,materialChromosomes); %Make script
             
             if strcmp(GAoptions.hostname,'Daniel-netbook')
                 system(['C:/Users/daniel/S4-1.1.1-win32/S4 ', GAoptions.dir,scriptFilename]); %Run script
@@ -252,44 +268,29 @@ classdef S4interfaceSquareGeneral
             A = importdata([GAoptions.dir,dataFilename,'.E']); %Load data from script
             delete([GAoptions.dir,dataFilename,'.E']); %Clear data file for reuse
             delete([GAoptions.dir,dataFilename,'.H']);
-delete([scriptFilename]);
+%delete([scriptFilename]);
             
-            %sizeA = size(A)
             
             Ex = A(:,4) + 1i*A(:,5);
-            %sizeEx = size(Ex)
             Ey = A(:,6) + 1i*A(:,7);
             Ez = A(:,8) + 1i*A(:,9);
             I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez)) * S.c*S.n_interference*S.eps_0/2;
-            %I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez)) .* GAoptions.gratingOptions.n_filled.*GAoptions.eps_0*GAoptions.c/2;
-            %NEED TO FIGURE OUT HOW TO CONVERT S4 INTENSITY UNITS TO REAL UNITS1.0
-            %I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez));
-            %sizeIlinear = size(I_linear)
-            %Need to permute dimensions because S4 outputs adjusting y, then x, then z
             I = reshape(I_linear, S.cells(2),S.cells(1),[]);
-            %sizeIr = size(I)
             intensityDist = permute(I,[2,1,3]);
-            %sizeId = size(intensityDist)
             
             
         end
         
         
         
-        function makeRunScript(S,GAoptions,grating,incidentFieldParams,dataFilename,scriptFilename,layerChromosomes)
+        function makeRunScript(S,GAoptions,grating,incidentFieldParams,dataFilename,scriptFilename,layerChromosomes,materialChromosomes)
             strat = grating.stratum{1,1};
             
             periodX = grating.d21;
             periodY = grating.d32;
             
-            %varScript = '';
-            %Define grating thickness:
-            %varScript = [varScript, 'S:AddLayer(''Grating'',', num2str(strat.thick), ', ''Vacuum'')  --grating layer (vacuum is background) \r\n'];
-            
-            %Assumes there is no metal deposition on sidewalls
 
-            
-%            save('lastgrating.mat', 'grating')
+  
             
             
             %Set Layers:
@@ -303,39 +304,77 @@ delete([scriptFilename]);
                     ];
             end
 
-%             setLayersScript = [ ...
-%                 sprintf('S:AddLayer(''PrInterference'', %2.3f, ''SU8'')  -- thick SU8 layer \r\n', grating.SU8thickness) ...
-%                 , sprintf('S:AddLayer(''SU8AirGrating'', %1.6f, ''Vacuum'')  --first grating layer \r\n', strat.thick) ...
-%             ];
-            
-            %Define block dimensions and positions:
- %           vertOffset = -periodX;  %Need to shift the block positions up and to the right as you move up in stripe#
- %           horiOffset = -periodY;
-            lastY = 0; %marks the position of the end of the last stripe
-            for s = 1:length(strat.stripe) %iterate by stripe
-                stripe = strat.stripe{1,s};
-                stripeEnd = stripe.c1; %top edge of stripe
-                lastX = 0; %marks the position of the end of the last block
-                for b = 1:length( stripe.block ) %iterate by block
-                    blockEnd = stripe.block{1,b}.c2; %right edge of current block
-                    if stripe.block{1,b}.pmt_index == 2 %if it's marked as SU8
- %                       centerX = ((lastX + blockEnd)/2 + lastY/2) * periodX + horiOffset; %scale by periodX because GDC does it relative to periodicity (period=1) %also shift to right as you go up in y
-                        centerX = (lastX + blockEnd)/2 * periodX;
-                        widthX = (blockEnd - lastX) * periodX;
- %                       centerY = (stripeEnd + lastY)/2 * periodY + vertOffset;
-                        centerY = (stripeEnd + lastY)/2 * periodY;
-                        widthY = (stripeEnd - lastY) * periodY;
-                        %varScript = [varScript, 'S:SetLayerPatternRectangle(''Grating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
-                        setLayerScript = [setLayerScript, sprintf('S:SetLayerPatternRectangle(''Grating'', ''SU8'', {%1.7f,%1.7f}, 0, {%1.7f,%1.7f}) \r\n',centerX,centerY,widthX/2,widthY/2)];
-                        %varScript = [varScript, 'S:SetLayerPatternRectangle(''SU8AirGrating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
-                        %layerScript = [layerScript, 'S:SetLayerPatternRectangle(''SU8MetalGrating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
-                    end
-                    lastX = blockEnd;
-                end
-                lastY = stripeEnd;
+            %Set Materials:
+            setMaterialsScript = '';
+            for i_m = 1:length(GAoptions.S4interfaceOptions.materials)
+                [n,k] = GAoptions.S4interfaceOptions.materials(i_m).getRI( materialChromosomes{i_m} );
+                setMaterialsScript = [ setMaterialsScript, ...
+                    sprintf('S:AddMaterial(''%s'', {%2.5f,%2.5f}) \r\n', ...
+                        GAoptions.S4interfaceOptions.materials(i_m).materialName, ...
+                        n^2-k^2, ...
+                        2*n*k ) ...
+                    ];
             end
             
             
+            if strcmp(GAoptions.lattice,'square')
+                %Define block dimensions and positions:
+                %           vertOffset = -periodX;  %Need to shift the block positions up and to the right as you move up in stripe#
+                %           horiOffset = -periodY;
+                lastY = 0; %marks the position of the end of the last stripe
+                for s = 1:length(strat.stripe) %iterate by stripe
+                    stripe = strat.stripe{1,s};
+                    stripeEnd = stripe.c1; %top edge of stripe
+                    lastX = 0; %marks the position of the end of the last block
+                    for b = 1:length( stripe.block ) %iterate by block
+                        blockEnd = stripe.block{1,b}.c2; %right edge of current block
+                        if stripe.block{1,b}.pmt_index == 2 %if it's marked as SU8
+                            %                       centerX = ((lastX + blockEnd)/2 + lastY/2) * periodX + horiOffset; %scale by periodX because GDC does it relative to periodicity (period=1) %also shift to right as you go up in y
+                            centerX = (lastX + blockEnd)/2 * periodX;
+                            widthX = (blockEnd - lastX) * periodX;
+                            %                       centerY = (stripeEnd + lastY)/2 * periodY + vertOffset;
+                            centerY = (stripeEnd + lastY)/2 * periodY;
+                            widthY = (stripeEnd - lastY) * periodY;
+                            %varScript = [varScript, 'S:SetLayerPatternRectangle(''Grating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
+                            setLayerScript = [setLayerScript, sprintf('S:SetLayerPatternRectangle(''Grating'', ''SU8'', {%1.7f,%1.7f}, 0, {%1.7f,%1.7f}) \r\n',centerX,centerY,widthX/2,widthY/2)];
+                            %varScript = [varScript, 'S:SetLayerPatternRectangle(''SU8AirGrating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
+                            %layerScript = [layerScript, 'S:SetLayerPatternRectangle(''SU8MetalGrating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
+                        end
+                        lastX = blockEnd;
+                    end
+                    lastY = stripeEnd;
+                end
+            
+            elseif strcmp(GAoptions.lattice,'hexagonal')
+                %Define block dimensions and positions:
+                vertOffset = -periodX/2;  %Need to shift the block positions up and to the right as you move up in stripe#
+                horiOffset = -periodY/2;
+                lastY = 0; %marks the position of the end of the last stripe
+                for s = 1:length(strat.stripe) %iterate by stripe
+                    stripe = strat.stripe{1,s};
+                    stripeEnd = stripe.c1; %top edge of stripe
+                    lastX = 0; %marks the position of the end of the last block
+                    for b = 1:length( stripe.block ) %iterate by block
+                        blockEnd = stripe.block{1,b}.c2; %right edge of current block
+                        if stripe.block{1,b}.pmt_index == 2 %if it's marked as SU8
+                            centerX = ((lastX + blockEnd)/2 + lastY/2) * periodX + horiOffset; %scale by periodX because GDC does it relative to periodicity (period=1) %also shift to right as you go up in y
+                            %centerX = (lastX + blockEnd)/2 * periodX;
+                            widthX = (blockEnd - lastX) * periodX;
+                            centerY = (stripeEnd + lastY)/2 * periodY + vertOffset;
+                            %centerY = (stripeEnd + lastY)/2 * periodY;
+                            widthY = (stripeEnd - lastY) * periodY;
+                            %varScript = [varScript, 'S:SetLayerPatternRectangle(''Grating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
+                            setLayerScript = [setLayerScript, sprintf('S:SetLayerPatternRectangle(''Grating'', ''SU8'', {%1.7f,%1.7f}, 0, {%1.7f,%1.7f}) \r\n',centerX,centerY,widthX/2,widthY/2)];
+                            %varScript = [varScript, 'S:SetLayerPatternRectangle(''SU8AirGrating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
+                            %layerScript = [layerScript, 'S:SetLayerPatternRectangle(''SU8MetalGrating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
+                        end
+                        lastX = blockEnd;
+                    end
+                    lastY = stripeEnd;
+                    %horiOffset = lastY/2
+                end                
+                
+            end
             
             
             %Set incident light parameters
@@ -364,7 +403,7 @@ delete([scriptFilename]);
             %Write strings to file and run:
             ef=fopen([GAoptions.dir,scriptFilename],'w');  %open/create file
             %fprintf(ef,[S.setBasicScript,S.setMaterialsScript,setLayerScript,excitationScript, setDataFilenameScript, S.collectDataScript]);
-            fprintf(ef,[S.setBasicScript,S.setMaterialsScript,setLayerScript,excitationScript, setDataFilenameScript, S.collectDataScript, S.getAmplitudesScript]);
+            fprintf(ef,[S.setBasicScript,setMaterialsScript,setLayerScript,excitationScript, setDataFilenameScript, S.collectDataScript, S.getAmplitudesScript]);
             %fprintf(ef,[S.constScript1,varScript,S.constScript2,excitationScript,S.constScript3]);
             fclose(ef);
             
