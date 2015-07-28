@@ -268,7 +268,7 @@ classdef S4interfaceSquareGeneral
             A = importdata([GAoptions.dir,dataFilename,'.E']); %Load data from script
             delete([GAoptions.dir,dataFilename,'.E']); %Clear data file for reuse
             delete([GAoptions.dir,dataFilename,'.H']);
-%delete([scriptFilename]);
+delete([scriptFilename]);
             
             
             Ex = A(:,4) + 1i*A(:,5);
