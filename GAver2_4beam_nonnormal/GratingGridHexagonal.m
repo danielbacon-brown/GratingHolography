@@ -1,4 +1,4 @@
-classdef GratingGridSquare
+classdef GratingGridHexagonal
     %Defines a grating according to a mesh, wherein the block in the mesh
     %can freely change in width and height.
     
@@ -24,7 +24,7 @@ classdef GratingGridSquare
     end
    
     methods
-        function G = GratingGridSquare(options)
+        function G = GratingGridHexagonal(options)
             G.NblockX = options.NblockX;
             G.NblockY = options.NblockY;
             
@@ -51,8 +51,10 @@ classdef GratingGridSquare
             G.constantGrating.d21 = G.period;  %First periodicity vector in x-direction
             G.constantGrating.d31 = 0;  %First periodicity vector in y-direction
                 
-            G.constantGrating.d22 = 0;  %Second periodicity vector x-direction
-            G.constantGrating.d32 = G.period;  %Second periodicity vector y-direction
+            %G.constantGrating.d22 = 0;  %Second periodicity vector x-direction
+            %G.constantGrating.d32 = G.period;  %Second periodicity vector y-direction
+            G.constantGrating.d22 = G.period/2;  %Second periodicity vector x-direction
+            G.constantGrating.d32 = G.period*sqrt(3)/2;  %Second periodicity vector y-direction
             
                 
             G.constantGrating.stratum={}; %container that will hold all the strata
@@ -78,7 +80,8 @@ classdef GratingGridSquare
 %                [G.chromNthickness, G.chromNspacingX*(G.NblockX-1), G.chromNspacingY*(G.NblockX-1), G.chromNcellArr]);
             [spacingXchrom, spacingYchrom, cellArrChrom ] = splitChromosome(chromosomeSection,  ...
                 [G.chromNspacingX*(G.NblockX-1), G.chromNspacingY*(G.NblockX-1), G.chromNcellArr]);
-
+            
+            
             %Generate spacings of the grid
             A = G.NblockX;
             B = G.NblockY;
@@ -129,7 +132,7 @@ classdef GratingGridSquare
             grating = G.constantGrating;
             
             %grating.stratum{1}.thick = convertChrom_gc(thicknessChrom,G.chromNthickness)*G.thicknessMax;  %Sets thickness of grating
-            grating.stratum{1}.thick = 1; %thickness is set by the layer object
+            grating.stratum{1}.thick = 1; %thickness set by layer object
             
             for j = 1:G.NblockY %stripes run along x-direction
                 grating.stratum{1}.stripe{j}.type = 1;  %inhomogeneous stripe
@@ -164,7 +167,7 @@ classdef GratingGridSquare
         function chromosomeSize = getChromosomeSize(G)
             %chromosomeSize = G.chromNthickness + G.chromNspacingX*(G.NblockX-1) + G.chromNspacingY*(G.NblockY-1) + G.chromNcellArr + G.chromNSU8thickness + G.chromNITOthickness;
             %chromosomeSize = G.chromNthickness + G.chromNspacingX*(G.NblockX-1) + G.chromNspacingY*(G.NblockY-1) + G.chromNcellArr;
-            chromosomeSize = G.chromNspacingX*(G.NblockX-1) + G.chromNspacingY*(G.NblockY-1) + G.chromNcellArr;
+            chromosomeSize =  G.chromNspacingX*(G.NblockX-1) + G.chromNspacingY*(G.NblockY-1) + G.chromNcellArr;
         end
         
         

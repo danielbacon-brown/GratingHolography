@@ -1,4 +1,4 @@
-classdef IncidentLightAngled4BeamSymmetric %< IncidentLightGenerator
+classdef IncidentLightAngled %< IncidentLightGenerator
     %Abstract class for generating a grating consistent with GDCalc
     
 
@@ -21,29 +21,40 @@ classdef IncidentLightAngled4BeamSymmetric %< IncidentLightGenerator
    
    methods 
        
-       function L = IncidentLightAngled4BeamSymmetric(options)
+       function L = IncidentLightAngled(options)
             L.wavelength = options.wavelength;
             L.n_interference = options.n_interference;
             L.n_incidence = options.n_incidence;
             %k_x = pi/options.period;
-            k_0 = 2*pi/L.wavelength   %um^-1
+            %k_0 = 2*pi/L.wavelength   %um^-1
 
             %k_y = pi/options.period;
 
             %L.phi = atan( (1/k_x^2+1/k_y^2)/(1/(k_z*L.n_interference/L.n_incidence)^2) ); %azimuthal angle
             %phi_interference = atan( sqrt(2) * options.C_over_A); %Gives azimuthal angle inside photoresist (relative to normal)
             if strcmp(options.lattice,'square')
-                k_x = k_0/(sqrt(2 + 1/(options.C_over_A^2)))
-                k_y=k_x
-                k_z = (1/options.C_over_A) * k_x
-                phi_interference = atan( sqrt(k_x^2+k_y^2)/k_z)
+                %k_x = k_0/(sqrt(2 + 1/(options.C_over_A^2))) %refractive index does not matter for phi and theta incident angle
+                %k_y=k_x
+                %k_z = (1/options.C_over_A) * k_x
+                %phi_interference = atan( sqrt(k_x^2+k_y^2)/k_z)
+                %phi_interference = atan( sqrt(2*k_x^2)/k_z )
+                phi_interference = atan( sqrt(2)*options.C_over_A )
+                L.theta = 45; %polar angle %relative to x-axis of grating
             elseif strcmp(options.lattice,'hexagonal')
-                phi_interference = atan( 1/sqrt(3) * options.C_over_A^2)
+                %k_z = pi/(options.C_over_A*options.period)
+                %k_parallel = sqrt(k_0^2-k_z^2)
+                %phi_interference = atan( k_parallel/k_z);
+                %phi_interference = atan( sqrt(k_0^2-k_z^2)/k_z);
+                %phi_interference = atan( sqrt(k_0^2-k_z^2)/k_z);
+                
+                phi_interference = atan( 2/sqrt(3) * options.C_over_A)
+                %phi_interference = atan( sqrt(3)/2 * options.C_over_A)
+                L.theta = 0;
             end
             
-            phi_glass = asin(L.n_interference/L.n_incidence*sin(phi_interference) ) %Gives azimuthal angle in glass substrate
+            phi_glass = asin(L.n_interference/L.n_incidence*sin(phi_interference) ); %Gives azimuthal angle in glass substrate
             L.phi = phi_glass*180/pi %S$ wants angles in degrees
-            L.theta = 45; %polar angle %relative to x-axis of grating
+
            
             %F.incidentField.wavelength = options.wavelength; %um %GDC will divide by refractive index of superstrate
             %F.incidentField.f2=sin(phi0)*cos(theta0)/options.wavelength; %These are projections of the incident spatial-frequency vector on x-y plane (in this case, zero)

@@ -54,11 +54,20 @@ classdef S4interfaceSquareGeneral
             
             
             %cs = [cs, 'time1 = os.clock() \r\n'];
+            
+            if strcmp(options.lattice,'square')
+                latticeStr = sprintf( 'S:SetLattice({%1.5f,%1.5f},{%1.5f,%1.5f}) \r\n',periodX,0,0,periodY)
+            elseif strcmp(options.lattice,'hexagonal')
+                latticeStr = sprintf( 'S:SetLattice({%1.5f,%1.5f},{%1.5f,%1.5f}) \r\n',periodX,0,periodX/2,periodY)
+            end
+            
             S.setBasicScript = [ ...
                 'S = S4.NewSimulation() \r\n' ...
                 ...%Define periodicity
-                , sprintf( 'S:SetLattice({%1.5f,%1.5f},{%1.5f,%1.5f}) \r\n',periodX,0,0,periodY) ...
-                , 'S:SetNumG(9) \r\n' ...
+                ..., sprintf( 'S:SetLattice({%1.5f,%1.5f},{%1.5f,%1.5f}) \r\n',periodX,0,0,periodY) ...
+                , latticeStr ...
+...                , 'S:SetNumG(9) \r\n' ...
+, 'S:SetNumG(20) \r\n' ...
                 , 'S:SetResolution(16) \r\n' ...
                 , 'S:UseDiscretizedEpsilon(1) \r\n' ...
                 ...%fprintf(ef, 'S:UseLanczosSmoothing(1) \n');
@@ -191,6 +200,13 @@ classdef S4interfaceSquareGeneral
                 , 'for key,value in pairs(forw) do print(forw[key][1], forw[key][2]) end \n'...
                 , 'print(''backward waves:'') \n'...
                 , 'for key,value in pairs(back) do print(back[key][1], back[key][2]) end \n'...
+                , 'print(''Num G: '') \n' ...
+                , 'ng = S:GetNumG() \n' ...
+                , 'print(ng) \n'...
+                , 'print(''G list: '') \n' ...
+                , 'glist = S:GetGList() \n'...
+                , 'for key,value in pairs(glist) do print(glist[key][1], glist[key][2]) end \n'...
+                , 'S:OutputStructurePOVRay(''HelixPOVrayScript.pov'') \n ' ...
                 ];
             %cs2 = [cs2, 'time3 = os.clock() \n' );
             
@@ -252,7 +268,7 @@ classdef S4interfaceSquareGeneral
             A = importdata([GAoptions.dir,dataFilename,'.E']); %Load data from script
             delete([GAoptions.dir,dataFilename,'.E']); %Clear data file for reuse
             delete([GAoptions.dir,dataFilename,'.H']);
-delete([scriptFilename]);
+%delete([scriptFilename]);
             
             
             Ex = A(:,4) + 1i*A(:,5);
@@ -301,35 +317,64 @@ delete([scriptFilename]);
             end
             
             
-            
-            %Define block dimensions and positions:
- %           vertOffset = -periodX;  %Need to shift the block positions up and to the right as you move up in stripe#
- %           horiOffset = -periodY;
-            lastY = 0; %marks the position of the end of the last stripe
-            for s = 1:length(strat.stripe) %iterate by stripe
-                stripe = strat.stripe{1,s};
-                stripeEnd = stripe.c1; %top edge of stripe
-                lastX = 0; %marks the position of the end of the last block
-                for b = 1:length( stripe.block ) %iterate by block
-                    blockEnd = stripe.block{1,b}.c2; %right edge of current block
-                    if stripe.block{1,b}.pmt_index == 2 %if it's marked as SU8
- %                       centerX = ((lastX + blockEnd)/2 + lastY/2) * periodX + horiOffset; %scale by periodX because GDC does it relative to periodicity (period=1) %also shift to right as you go up in y
-                        centerX = (lastX + blockEnd)/2 * periodX;
-                        widthX = (blockEnd - lastX) * periodX;
- %                       centerY = (stripeEnd + lastY)/2 * periodY + vertOffset;
-                        centerY = (stripeEnd + lastY)/2 * periodY;
-                        widthY = (stripeEnd - lastY) * periodY;
-                        %varScript = [varScript, 'S:SetLayerPatternRectangle(''Grating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
-                        setLayerScript = [setLayerScript, sprintf('S:SetLayerPatternRectangle(''Grating'', ''SU8'', {%1.7f,%1.7f}, 0, {%1.7f,%1.7f}) \r\n',centerX,centerY,widthX/2,widthY/2)];
-                        %varScript = [varScript, 'S:SetLayerPatternRectangle(''SU8AirGrating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
-                        %layerScript = [layerScript, 'S:SetLayerPatternRectangle(''SU8MetalGrating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
+            if strcmp(GAoptions.lattice,'square')
+                %Define block dimensions and positions:
+                %           vertOffset = -periodX;  %Need to shift the block positions up and to the right as you move up in stripe#
+                %           horiOffset = -periodY;
+                lastY = 0; %marks the position of the end of the last stripe
+                for s = 1:length(strat.stripe) %iterate by stripe
+                    stripe = strat.stripe{1,s};
+                    stripeEnd = stripe.c1; %top edge of stripe
+                    lastX = 0; %marks the position of the end of the last block
+                    for b = 1:length( stripe.block ) %iterate by block
+                        blockEnd = stripe.block{1,b}.c2; %right edge of current block
+                        if stripe.block{1,b}.pmt_index == 2 %if it's marked as SU8
+                            %                       centerX = ((lastX + blockEnd)/2 + lastY/2) * periodX + horiOffset; %scale by periodX because GDC does it relative to periodicity (period=1) %also shift to right as you go up in y
+                            centerX = (lastX + blockEnd)/2 * periodX;
+                            widthX = (blockEnd - lastX) * periodX;
+                            %                       centerY = (stripeEnd + lastY)/2 * periodY + vertOffset;
+                            centerY = (stripeEnd + lastY)/2 * periodY;
+                            widthY = (stripeEnd - lastY) * periodY;
+                            %varScript = [varScript, 'S:SetLayerPatternRectangle(''Grating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
+                            setLayerScript = [setLayerScript, sprintf('S:SetLayerPatternRectangle(''Grating'', ''SU8'', {%1.7f,%1.7f}, 0, {%1.7f,%1.7f}) \r\n',centerX,centerY,widthX/2,widthY/2)];
+                            %varScript = [varScript, 'S:SetLayerPatternRectangle(''SU8AirGrating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
+                            %layerScript = [layerScript, 'S:SetLayerPatternRectangle(''SU8MetalGrating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
+                        end
+                        lastX = blockEnd;
                     end
-                    lastX = blockEnd;
+                    lastY = stripeEnd;
                 end
-                lastY = stripeEnd;
+            
+            elseif strcmp(GAoptions.lattice,'hexagonal')
+                %Define block dimensions and positions:
+                vertOffset = -periodX/2;  %Need to shift the block positions up and to the right as you move up in stripe#
+                horiOffset = -periodY/2;
+                lastY = 0; %marks the position of the end of the last stripe
+                for s = 1:length(strat.stripe) %iterate by stripe
+                    stripe = strat.stripe{1,s};
+                    stripeEnd = stripe.c1; %top edge of stripe
+                    lastX = 0; %marks the position of the end of the last block
+                    for b = 1:length( stripe.block ) %iterate by block
+                        blockEnd = stripe.block{1,b}.c2; %right edge of current block
+                        if stripe.block{1,b}.pmt_index == 2 %if it's marked as SU8
+                            centerX = ((lastX + blockEnd)/2 + lastY/2) * periodX + horiOffset; %scale by periodX because GDC does it relative to periodicity (period=1) %also shift to right as you go up in y
+                            %centerX = (lastX + blockEnd)/2 * periodX;
+                            widthX = (blockEnd - lastX) * periodX;
+                            centerY = (stripeEnd + lastY)/2 * periodY + vertOffset;
+                            %centerY = (stripeEnd + lastY)/2 * periodY;
+                            widthY = (stripeEnd - lastY) * periodY;
+                            %varScript = [varScript, 'S:SetLayerPatternRectangle(''Grating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
+                            setLayerScript = [setLayerScript, sprintf('S:SetLayerPatternRectangle(''Grating'', ''SU8'', {%1.7f,%1.7f}, 0, {%1.7f,%1.7f}) \r\n',centerX,centerY,widthX/2,widthY/2)];
+                            %varScript = [varScript, 'S:SetLayerPatternRectangle(''SU8AirGrating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
+                            %layerScript = [layerScript, 'S:SetLayerPatternRectangle(''SU8MetalGrating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
+                        end
+                        lastX = blockEnd;
+                    end
+                    lastY = stripeEnd;
+                    %horiOffset = lastY/2
+                end                
+                
             end
-            
-            
             
             
             %Set incident light parameters

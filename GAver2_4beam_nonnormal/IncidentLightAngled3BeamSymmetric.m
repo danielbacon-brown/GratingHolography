@@ -1,7 +1,8 @@
-classdef IncidentLightAngled4BeamSymmetric %< IncidentLightGenerator
+classdef IncidentLightAngled3BeamSymmetric %< IncidentLightGenerator
     %Abstract class for generating a grating consistent with GDCalc
     
-
+    %For hexagonal lattice
+    
    properties (SetAccess = protected, GetAccess = protected)
        incidentField;  %structure for GDcalc
        chromNpsi; %Number of chromosome positions for orientation angle
@@ -21,25 +22,21 @@ classdef IncidentLightAngled4BeamSymmetric %< IncidentLightGenerator
    
    methods 
        
-       function L = IncidentLightAngled4BeamSymmetric(options)
+       function L = IncidentLightAngled3BeamSymmetric(options)
             L.wavelength = options.wavelength;
             L.n_interference = options.n_interference;
             L.n_incidence = options.n_incidence;
             %k_x = pi/options.period;
-            k_0 = 2*pi/L.wavelength   %um^-1
-
+%            k_0 = 2*pi/L.wavelength   %um^-1
+%            k_x = k_0/(sqrt(2 + 1/(options.C_over_A^2)))
             %k_y = pi/options.period;
-
+%            k_y=k_x
+%            k_z = (1/options.C_over_A) * k_x
             %L.phi = atan( (1/k_x^2+1/k_y^2)/(1/(k_z*L.n_interference/L.n_incidence)^2) ); %azimuthal angle
             %phi_interference = atan( sqrt(2) * options.C_over_A); %Gives azimuthal angle inside photoresist (relative to normal)
-            if strcmp(options.lattice,'square')
-                k_x = k_0/(sqrt(2 + 1/(options.C_over_A^2)))
-                k_y=k_x
-                k_z = (1/options.C_over_A) * k_x
-                phi_interference = atan( sqrt(k_x^2+k_y^2)/k_z)
-            elseif strcmp(options.lattice,'hexagonal')
-                phi_interference = atan( 1/sqrt(3) * options.C_over_A^2)
-            end
+%            phi_interference = atan( sqrt(k_x^2+k_y^2)/k_z)
+            
+            phi_interference = atan( 1/sqrt(3) * options.C_over_A^2)  %For hexagonal
             
             phi_glass = asin(L.n_interference/L.n_incidence*sin(phi_interference) ) %Gives azimuthal angle in glass substrate
             L.phi = phi_glass*180/pi %S$ wants angles in degrees
