@@ -10,8 +10,8 @@ function runGA_8beamVarLayer
 GAoptions.hostname = strtrim(hostname);
 
 %%%%% Genetic Algorithm Options %%%%%
-    GAoptions.popSize = 6;
-    GAoptions.numGen = 2;
+    GAoptions.popSize = 300;
+    GAoptions.numGen = 25;
     GAoptions.elite = 1;
     GAoptions.numRepetitions = 1; %Number of times to repeat the GA
     %Options for built-in GA algorithm:
@@ -94,7 +94,7 @@ GAoptions.hostname = strtrim(hostname);
 
     %%%%%% Lattice Dimensions %%%%%
     GAoptions.laserWavelength = 0.532; %um
-    GAoptions.C_over_A = 1;    %Max C/A for air gap is 0.578 %for PDMS prism, max C/A = 1.396
+    GAoptions.C_over_A = 0.75;    %Max C/A for air gap is 0.578 %for PDMS prism, max C/A = 1.396
     GAoptions.lattice = 'square';
     GAoptions.n_PR = 1.58; %refractive index of the photoresist (SU8)
     GAoptions.n_substrate = 1.5; %Glass slide as substrate
@@ -178,7 +178,7 @@ GAoptions.hostname = strtrim(hostname);
     targetStructureOptions.u = GAoptions.u;
     targetStructureOptions.v = GAoptions.v;
     targetStructureOptions.w = GAoptions.w;
-    targetStructureOptions.radb = GAoptions.period/5; %radius / distance of middle of helix to axis (um)
+    targetStructureOptions.radb = GAoptions.period/4; %radius / distance of middle of helix to axis (um)
     targetStructureOptions.radl = GAoptions.period/8; %radius of the wire (um)
     targetStructureOptions.relativeZ = GAoptions.C_over_A; %ratio of height to width of ellipsoidal 'pen'
     GAoptions.targetStructureOptions = targetStructureOptions;
@@ -192,7 +192,7 @@ GAoptions.hostname = strtrim(hostname);
     exclusionStructureOptions.u = GAoptions.u;
     exclusionStructureOptions.v = GAoptions.v;
     exclusionStructureOptions.w = GAoptions.w;
-    exclusionStructureOptions.radb = GAoptions.period/5;
+    exclusionStructureOptions.radb = GAoptions.period/4;
     exclusionStructureOptions.radl = GAoptions.period/4;
     exclusionStructureOptions.relativeZ = GAoptions.C_over_A;  %ratio of height to width of ellipsoidal 'pen'
     GAoptions.exclusionStructureOptions = exclusionStructureOptions;
@@ -255,7 +255,7 @@ GAoptions.hostname = strtrim(hostname);
     S4interfaceOptions.materialRI = [ ...
         1, ...
         1.5, ...
-        1.94 - 0.046i, ...
+        1.94 + 0.046i, ...
         1.58 ];
     
     %%%%% Layers: %%%%%
