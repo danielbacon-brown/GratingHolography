@@ -10,8 +10,8 @@ function runGA_8beamVarLayer
 GAoptions.hostname = strtrim(hostname);
 
 %%%%% Genetic Algorithm Options %%%%%
-    GAoptions.popSize = 200;
-    GAoptions.numGen = 30;
+    GAoptions.popSize = 6;
+    GAoptions.numGen = 2;
     GAoptions.elite = 1;
     GAoptions.numRepetitions = 1; %Number of times to repeat the GA
     %Options for built-in GA algorithm:
@@ -94,17 +94,17 @@ GAoptions.hostname = strtrim(hostname);
 
     %%%%%% Lattice Dimensions %%%%%
     GAoptions.laserWavelength = 0.532; %um
-    GAoptions.C_over_A = 1.1;    %Max C/A for air gap is 0.578 %for PDMS prism, max C/A = 1.396
+    GAoptions.C_over_A = 0.7;    %Max C/A for air gap is 0.578 %for PDMS prism, max C/A = 1.396
     %GAoptions.lattice = 'square';
     GAoptions.lattice = 'hexagonal';
     GAoptions.n_PR = 1.58; %refractive index of the photoresist (SU8)
-    GAoptions.n_substrate = 1.52;   %Glass slide as substrate
+    GAoptions.n_substrate = 1.51;   %Glass slide as substrate
     %GAoptions.n_prism = 1.5; %glass prism
     %GAoptions.n_prism = 1; %no prism
     GAoptions.n_gratingVoid = 1; %assuming vacuum-SU8 grating
     %This assumes the 4-beam symmetric configuration
     if strcmp(GAoptions.lattice, 'square')
-        GAoptions.period = GAoptions.laserWavelength/(2*GAoptions.n_PR) * sqrt(2+1/(GAoptions.C_over_A^2))
+        GAoptions.period = GAoptions.laserWavelength/(2*GAoptions.n_PR) * sqrt(2+1/(GAoptions.C_over_A^2));
     elseif strcmp(GAoptions.lattice, 'hexagonal')
         %GAoptions.period =   GAoptions.laserWavelength/GAoptions.n_PR * (GAoptions.C_over_A/3 + 1/GAoptions.C_over_A); %%%% GAoptions.laserWavelength/(2*GAoptions.n_PR) * sqrt(2+1/(GAoptions.C_over_A^2))
         GAoptions.period =   GAoptions.laserWavelength/GAoptions.n_PR * sqrt( 1/3 + 1/4 * 1/GAoptions.C_over_A^2);
@@ -269,7 +269,7 @@ GAoptions.hostname = strtrim(hostname);
     %%%%% Materials %%%%%
     chromNmaterial = 8;
     S4interfaceOptions.materials(1) = Material('Vacuum',1);
-    %S4interfaceOptions.materials(2) = Material('Glass',-1,1.47,1.52,chromNmaterial);
+    %S4interfaceOptions.materials(2) = Material('Glass',-1, 1.47,1.52,chromNmaterial);
     S4interfaceOptions.materials(2) = Material('Glass',1.51);
     S4interfaceOptions.materials(3) = Material('ITO',1.94-0.046i);
     S4interfaceOptions.materials(4) = Material('SU8',1.58);
