@@ -26,7 +26,7 @@ classdef IncidentLightAngled %< IncidentLightGenerator
             L.n_interference = options.n_interference;
             L.n_incidence = options.n_incidence;
             %k_x = pi/options.period;
-            %k_0 = 2*pi/L.wavelength   %um^-1
+            k_0 = 2*pi/L.wavelength   %um^-1
 
             %k_y = pi/options.period;
 
@@ -36,7 +36,7 @@ classdef IncidentLightAngled %< IncidentLightGenerator
                 %k_x = k_0/(sqrt(2 + 1/(options.C_over_A^2))) %refractive index does not matter for phi and theta incident angle
                 %k_y=k_x
                 %k_z = (1/options.C_over_A) * k_x
-                %phi_interference = atan( sqrt(k_x^2+k_y^2)/k_z)
+                %  phi_interference = atan( sqrt(k_x^2+k_y^2)/k_z)
                 %phi_interference = atan( sqrt(2*k_x^2)/k_z )
                 phi_interference = atan( sqrt(2)*options.C_over_A )
                 L.theta = 45; %polar angle %relative to x-axis of grating
@@ -46,9 +46,10 @@ classdef IncidentLightAngled %< IncidentLightGenerator
                 %phi_interference = atan( k_parallel/k_z);
                 %phi_interference = atan( sqrt(k_0^2-k_z^2)/k_z);
                 %phi_interference = atan( sqrt(k_0^2-k_z^2)/k_z);
-                
-                phi_interference = atan( 2/sqrt(3) * options.C_over_A)
+                %phi_interference = atan( 2/sqrt(3) * options.C_over_A)
                 %phi_interference = atan( sqrt(3)/2 * options.C_over_A)
+                %phi_interference = atan( 4/3 * options.C_over_A )
+                phi_interference = asin( 2*L.wavelength/(3*options.period*L.n_interference) )
                 L.theta = 0;
             end
             

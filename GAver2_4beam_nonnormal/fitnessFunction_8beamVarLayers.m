@@ -115,7 +115,7 @@ if exist('doPlots','var') %Plot simulated structure
     ylim([1 size(intensityDist,2)+2])
     zlim([1 size(intensityDist,3)+2])
     
-    
+%     
 %     %Do Lumerical simulation
 %     writeLumericalRunFileSquare(GAoptions, intensityDist>threshold);
 %     system(['fdtd-solutions -run ', GAoptions.dir, GAoptions.LumRunScript]);
@@ -136,7 +136,7 @@ if exist('doPlots','var') %Plot simulated structure
 %     plot(wavelengths,transmissionRight,'r',wavelengths,transmissionLeft,'b');
 %     figure
 %     plot(wavelengths,reflectionRight,'r',wavelengths,reflectionLeft,'b');
-
+% 
 
 
 
