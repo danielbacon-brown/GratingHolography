@@ -268,7 +268,7 @@ classdef S4interfaceSquareGeneral
             A = importdata([GAoptions.dir,dataFilename,'.E']); %Load data from script
             delete([GAoptions.dir,dataFilename,'.E']); %Clear data file for reuse
             delete([GAoptions.dir,dataFilename,'.H']);
-delete([scriptFilename]);
+%delete([scriptFilename]);
             
             
             Ex = A(:,4) + 1i*A(:,5);
@@ -388,6 +388,10 @@ delete([scriptFilename]);
             end
             
             
+            figure
+            hold on
+            axis([-periodX, periodX*2, -periodY, periodY*2])
+            
             if strcmp(GAoptions.lattice,'square')
                 %Define block dimensions and positions:
                 %           vertOffset = -periodX;  %Need to shift the block positions up and to the right as you move up in stripe#
@@ -401,15 +405,20 @@ delete([scriptFilename]);
                         blockEnd = stripe.block{1,b}.c2; %right edge of current block
                         if stripe.block{1,b}.pmt_index == 2 %if it's marked as SU8
                             %                       centerX = ((lastX + blockEnd)/2 + lastY/2) * periodX + horiOffset; %scale by periodX because GDC does it relative to periodicity (period=1) %also shift to right as you go up in y
-                            centerX = (lastX + blockEnd)/2 * periodX;
-                            widthX = (blockEnd - lastX) * periodX;
+                            centerX = (lastX + blockEnd)/2 * periodX
+                            widthX = (blockEnd - lastX) * periodX
                             %                       centerY = (stripeEnd + lastY)/2 * periodY + vertOffset;
-                            centerY = (stripeEnd + lastY)/2 * periodY;
-                            widthY = (stripeEnd - lastY) * periodY;
+                            centerY = (stripeEnd + lastY)/2 * periodY
+                            widthY = (stripeEnd - lastY) * periodY
                             %varScript = [varScript, 'S:SetLayerPatternRectangle(''Grating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
                             setLayerScript = [setLayerScript, sprintf('S:SetLayerPatternRectangle(''Grating'', ''SU8'', {%1.7f,%1.7f}, 0, {%1.7f,%1.7f}) \r\n',centerX,centerY,widthX/2,widthY/2)];
                             %varScript = [varScript, 'S:SetLayerPatternRectangle(''SU8AirGrating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
                             %layerScript = [layerScript, 'S:SetLayerPatternRectangle(''SU8MetalGrating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
+
+                        rectangle('Position',[centerX-widthX/2, centerY-widthY/2, widthX, widthY] )
+                        
+                        
+                        
                         end
                         lastX = blockEnd;
                     end
@@ -438,6 +447,11 @@ delete([scriptFilename]);
                             setLayerScript = [setLayerScript, sprintf('S:SetLayerPatternRectangle(''Grating'', ''SU8'', {%1.7f,%1.7f}, 0, {%1.7f,%1.7f}) \r\n',centerX,centerY,widthX/2,widthY/2)];
                             %varScript = [varScript, 'S:SetLayerPatternRectangle(''SU8AirGrating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
                             %layerScript = [layerScript, 'S:SetLayerPatternRectangle(''SU8MetalGrating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
+
+                           rectangle('Position',[centerX-widthX/2, centerY-widthY/2, widthX, widthY] )
+                        
+                        
+                        
                         end
                         lastX = blockEnd;
                     end
