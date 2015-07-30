@@ -115,28 +115,28 @@ if exist('doPlots','var') %Plot simulated structure
     ylim([1 size(intensityDist,2)+2])
     zlim([1 size(intensityDist,3)+2])
     
-    
-    %Do Lumerical simulation
-    writeLumericalRunFileSquare(GAoptions, intensityDist>threshold);
-    system(['fdtd-solutions -run ', GAoptions.dir, GAoptions.LumRunScript]);
-    while(~exist([GAoptions.dir,GAoptions.currentLumResultsFile,'.mat'],'file'))
-       pause(0.1)
-    end
-    LumResults = load([GAoptions.dir,GAoptions.currentLumResultsFile]);
-    transmissionRight = LumResults.transmission_right/sqrt(2);
-    transmissionLeft = LumResults.transmission_left/sqrt(2);
-    reflectionRight = LumResults.reflection_right*-1/sqrt(2);
-    reflectionLeft = LumResults.reflection_left*-1/sqrt(2);
-    
-    %Plot transmission and reflection of RCP and LCP waves
-    figure
-    frequencies = linspace(2.99e8/GAoptions.fdtd.maxMeasWL, 2.99e8/GAoptions.fdtd.minMeasWL, GAoptions.fdtd.numMeasWL); %Linear in frequency space
-    %wavelengths = linspace(GAoptions.fdtd.minMeasWL,GAoptions.fdtd.maxMeasWL,GAoptions.fdtd.numMeasWL);
-    wavelengths = 2.99e8./frequencies; %Convert to wavelength
-    plot(wavelengths,transmissionRight,'r',wavelengths,transmissionLeft,'b');
-    figure
-    plot(wavelengths,reflectionRight,'r',wavelengths,reflectionLeft,'b');
-
+%     
+%     %Do Lumerical simulation
+%     writeLumericalRunFileSquare(GAoptions, intensityDist>threshold);
+%     system(['fdtd-solutions -run ', GAoptions.dir, GAoptions.LumRunScript]);
+%     while(~exist([GAoptions.dir,GAoptions.currentLumResultsFile,'.mat'],'file'))
+%        pause(0.1)
+%     end
+%     LumResults = load([GAoptions.dir,GAoptions.currentLumResultsFile]);
+%     transmissionRight = LumResults.transmission_right/sqrt(2);
+%     transmissionLeft = LumResults.transmission_left/sqrt(2);
+%     reflectionRight = LumResults.reflection_right*-1/sqrt(2);
+%     reflectionLeft = LumResults.reflection_left*-1/sqrt(2);
+%     
+%     %Plot transmission and reflection of RCP and LCP waves
+%     figure
+%     frequencies = linspace(2.99e8/GAoptions.fdtd.maxMeasWL, 2.99e8/GAoptions.fdtd.minMeasWL, GAoptions.fdtd.numMeasWL); %Linear in frequency space
+%     %wavelengths = linspace(GAoptions.fdtd.minMeasWL,GAoptions.fdtd.maxMeasWL,GAoptions.fdtd.numMeasWL);
+%     wavelengths = 2.99e8./frequencies; %Convert to wavelength
+%     plot(wavelengths,transmissionRight,'r',wavelengths,transmissionLeft,'b');
+%     figure
+%     plot(wavelengths,reflectionRight,'r',wavelengths,reflectionLeft,'b');
+% 
 
 
 
