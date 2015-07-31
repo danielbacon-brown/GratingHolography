@@ -60,7 +60,7 @@ GAoptions.hostname = strtrim(hostname);
     
 
     %%%%%% Lattice Dimensions %%%%%
-    GAoptions.normalIncidence = 1; 
+    GAoptions.normalIncidence = 1;  
     GAoptions.laserWavelength = 0.532; %um
     GAoptions.C_over_A = 1;    %Max C/A for air gap is 0.578 %for PDMS prism, max C/A = 1.396 %Will be overwritten if normal incidence
     GAoptions.lattice = 'square';
@@ -72,7 +72,7 @@ GAoptions.hostname = strtrim(hostname);
     %GAoptions.n_prism = 1; %no prism
     GAoptions.n_gratingVoid = 1; %assuming vacuum-SU8 grating
     
-    %Periodicity
+    %Periodicity    
     if GAoptions.normalIncidence %Normally incident light
         
         if strcmp(GAoptions.lattice, 'square')
