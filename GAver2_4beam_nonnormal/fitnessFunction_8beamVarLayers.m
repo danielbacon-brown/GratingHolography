@@ -86,7 +86,7 @@ intensityDist = GAoptions.offsetConductor.doOffset(intensityDist, offsetChromoso
 
 if exist('doPlots','var') %Plot simulated structure
     figure
-    patched = patch(isosurface(padarray(intensityDist,[1,1,1],100),threshold));
+    patched = patch(isosurface(padarray(intensityDist,[1,1,1],1e20),threshold));
     set(patched,'FaceColor', [30 255 30]/256, 'EdgeColor', 'none');
     view(3);
     camlight
@@ -97,7 +97,7 @@ if exist('doPlots','var') %Plot simulated structure
     zlim([1 size(intensityDist,3)+2])
     
     
-    if strcmp(GAoptions.lattice, 'square') && ~strcmp(strtrim(hostname),'Daniel-netbook')
+    if strcmp(GAoptions.lattice, 'square') && ~strcmp(strtrim(GAoptions.hostname),'Daniel-netbook')
         
         
         %Do Lumerical simulation
@@ -128,7 +128,7 @@ if exist('doPlots','var') %Plot simulated structure
         
         %Plot cartesian
         figure
-        patched = patch(isosurface(padarray(intensityDist,[1,1,1],100),threshold));
+        patched = patch(isosurface(padarray(intensityDist,[1,1,1],1e20),threshold));
         set(patched,'FaceColor', [30 255 30]/256, 'EdgeColor', 'none');
         view(3);
         camlight
@@ -138,7 +138,7 @@ if exist('doPlots','var') %Plot simulated structure
         ylim([1 size(intensityDist,1)+2])
         zlim([1 size(intensityDist,3)+2])
         
-       % if ~strcmp(strtrim(GAoptions.hostname),'Daniel-netbook')
+        if ~strcmp(strtrim(GAoptions.hostname),'Daniel-netbook')
             %Do Lumerical simulation
             
             %Make hexagonal repeat of structure:
@@ -168,7 +168,7 @@ if exist('doPlots','var') %Plot simulated structure
             figure
             plot(wavelengths,reflectionRight,'r',wavelengths,reflectionLeft,'b');
         
-      %  end
+        end
         
     end
     
@@ -206,7 +206,7 @@ if exist('doPlots','var') %Plot simulated structure
     acidMin = min(min(min(acidCount)))
     threshold = fixfill(acidCount,256,GAoptions.fill); %Calculates the threshold value that will yield desired fill fraction
     figure
-    patched = patch(isosurface(padarray(acidCount,[1,1,1],100),threshold));
+    patched = patch(isosurface(padarray(acidCount,[1,1,1],1e20),threshold));
     set(patched,'FaceColor', [255 127 80]/256, 'EdgeColor', 'none');
     view(3);
     camlight
@@ -228,7 +228,7 @@ if exist('doPlots','var') %Plot simulated structure
     crosslinkCount = sum(smoothed,4);
     crosslinkThreshold = fixfill(crosslinkCount, 256, GAoptions.fill)
     figure
-    patched = patch(isosurface(padarray(crosslinkCount,[1,1,1],100),crosslinkThreshold));
+    patched = patch(isosurface(padarray(crosslinkCount,[1,1,1],1e20),crosslinkThreshold));
     set(patched,'FaceColor', [255 127 80]/256, 'EdgeColor', 'none');
     view(3);
     camlight

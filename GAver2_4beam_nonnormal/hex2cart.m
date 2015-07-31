@@ -19,12 +19,12 @@ NzUV = size(Ihex,3);
 Xq = zeros(NxCart,NyCart,NzCart); %Query points = cartesian grid points
 Yq = zeros(NxCart,NyCart,NzCart); 
 Zq = zeros(NxCart,NyCart,NzCart);
-cs = linspace(0,1,NxCart+1);  %Take each dimension of unit cell to be 1 (Nx+1 ticks for Nx lengths
+cs = linspace(0,1,NzCart+1);  %Take each dimension of unit cell to be 1 (Nx+1 ticks for Nx lengths)
 bs = linspace(0,1,NyCart+1);  
-as = linspace(0,1,NzCart+1);
+as = linspace(0,1,NxCart+1);
 for c_i = 1:NzCart  
     for b_i = 1:NyCart
-        for a_i = 1:NzCart
+        for a_i = 1:NxCart
             c = cs(c_i);
             b = bs(b_i);
             a = as(a_i);
@@ -37,7 +37,7 @@ for c_i = 1:NzCart
             %f = e/(NzCart/NzUV);
             %d = a;
             
-            d = a-b/2; %shift over x-values as y increases
+            d = a-b/2; %shift over x-values as y increases  %Should increase x by 1/2 for b=1
             e = b;
             f = c;
             
