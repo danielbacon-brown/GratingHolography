@@ -10,8 +10,8 @@ function runGA_8beamVarLayer
 GAoptions.hostname = strtrim(hostname);
 
 %%%%% Genetic Algorithm Options %%%%%
-    GAoptions.popSize = 4000;
-    GAoptions.numGen = 100;
+    GAoptions.popSize = 300;
+    GAoptions.numGen = 30;
     GAoptions.elite = 1;
     GAoptions.numRepetitions = 1; %Number of times to repeat the GA
     %Options for built-in GA algorithm:
@@ -94,7 +94,7 @@ GAoptions.hostname = strtrim(hostname);
 
     %%%%%% Lattice Dimensions %%%%%
     GAoptions.laserWavelength = 0.532; %um
-    GAoptions.C_over_A = 1;    %Max C/A for air gap is 0.578 %for PDMS prism, max C/A = 1.396
+    GAoptions.C_over_A = 0.9;    %Max C/A for air gap is 0.578 %for PDMS prism, max C/A = 1.396
     %GAoptions.lattice = 'square';
     GAoptions.lattice = 'hexagonal';
     GAoptions.n_PR = 1.58; %refractive index of the photoresist (SU8)
@@ -119,6 +119,7 @@ GAoptions.hostname = strtrim(hostname);
         GAoptions.dimensions = [GAoptions.period, GAoptions.period, GAoptions.period*GAoptions.C_over_A]; %dimensions of unit cell
     elseif strcmp(GAoptions.lattice, 'hexagonal')
         GAoptions.dimensions = [GAoptions.period, GAoptions.period*sqrt(3)/2, GAoptions.period*GAoptions.C_over_A]; %dimensions of unit cell
+        GAoptions.cellsCart = floor( 25*[1,sqrt(3)/2,GAoptions.C_over_A] );
     end
     
     %Vectors describing periodicity:
