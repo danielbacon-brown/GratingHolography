@@ -186,54 +186,30 @@ classdef S4interfaceSquareGeneral
             
             
             
-            % %Get field in cartesian coordinate array
-            % fprintf(ef, 'for z=(0.064 +1e-6),(0.064+0.532*2 -1e-6),Cz do \n'); %z
-            %
-            %     fprintf(ef, 'for y=(0 +1e-6),(periodY -1e-6),(periodY/Cy) do \n'); %y
-            %         fprintf(ef, 'for x=(0 +1e-6),(periodX -1e-6),(periodX/Cx) do \n'); %y
-            %
-            %
-            %         fprintf(ef, 'end \n');
-            %     fprintf(ef, 'end \n');
-            % fprintf(ef, 'end \n');
             
-            
-            %fprintf(ef, 'i = S:GetDiffractionOrder(1, 1) \n');
-            %fprintf(ef, 'print(i) \n');
-            
-            %cs2 = [cs2, 'time2 = os.clock() \n' );
-            S.getAmplitudesScript = [ ...
-                'forw,back = S:GetAmplitudes(''PrInterference'',2.5) \n' ...
-                , 'print(''forward waves:'') \n'...
-                , 'for key,value in pairs(forw) do print(key, forw[key][1], forw[key][2]) end \n'...
-                , 'print(''backward waves:'') \n'...
-                , 'for key,value in pairs(back) do print(key, back[key][1], back[key][2]) end \n'...
-                , 'print(''Num G: '') \n' ...
-                , 'ng = S:GetNumG() \n' ...
-                , 'print(ng) \n'...
-                , 'print(''G list: '') \n' ...
-                , 'glist = S:GetGList() \n'...
-                , 'for key,value in pairs(glist) do print(key, glist[key][1], glist[key][2]) end \n'...
-                , 'S:OutputStructurePOVRay(''HelixPOVrayScript.pov'') \n ' ...
-                , 'Gu,Gv = S:GetReciprocalLattice() \n' ...
-                , 'print(''Gu '', Gu[1][1]*2*math.pi,'' '',Gu[1][2]*2*math.pi, ''     Gv '',Gu[2][1]*2*math.pi,'' '',Gu[2][2]*2*math.pi ) \n' ... [1],'' '',Gv[2]) \n' ...
-                ];
-            %cs2 = [cs2, 'time3 = os.clock() \n' );
+%             S.getAmplitudesScript = [ ...
+%                 'forw,back = S:GetAmplitudes(''PrInterference'',2.5) \n' ...
+%                 , 'print(''forward waves:'') \n'...
+%                 , 'for key,value in pairs(forw) do print(key, forw[key][1], forw[key][2]) end \n'...
+%                 , 'print(''backward waves:'') \n'...
+%                 , 'for key,value in pairs(back) do print(key, back[key][1], back[key][2]) end \n'...
+%                 , 'print(''Num G: '') \n' ...
+%                 , 'ng = S:GetNumG() \n' ...
+%                 , 'print(ng) \n'...
+%                 , 'print(''G list: '') \n' ...
+%                 , 'glist = S:GetGList() \n'...
+%                 , 'for key,value in pairs(glist) do print(key, glist[key][1], glist[key][2]) end \n'...
+%                 , 'S:OutputStructurePOVRay(''HelixPOVrayScript.pov'') \n ' ...
+%                 , 'Gu,Gv = S:GetReciprocalLattice() \n' ...
+%                 , 'print(''Gu '', Gu[1][1]*2*math.pi,'' '',Gu[1][2]*2*math.pi, ''     Gv '',Gu[2][1]*2*math.pi,'' '',Gu[2][2]*2*math.pi ) \n' ... [1],'' '',Gv[2]) \n' ...
+%                 ];
+
+            S.getAmplitudesScript = '';  %Don't want to bother getting the amplitudes unless doing a check
+
             
             
             
-            
-            
-            %cs2 = [cs2, 'print(time2-time1) \n' );
-            %cs2 = [cs2, 'print(time3-time2) \n' );
-            %'automatedS4script.lua'
-            %fprintf(ef, 'print(''each forward mode:'') \n');
-            %fprintf(ef, 'for key,value in pairs(forw) do print(forw[key][1], forw[key][2]) end \n');
-            %fprintf(ef, 'for key,value in pairs(forw) do print( forw[key][1]^2+ forw[key][2]^2 ) end \n');
-            %fprintf(ef, 'print(''each backward mode:'') \n');
-            %fprintf(ef, 'for key,value in pairs(back) do print(back[key][1], back[key][2]) end \n');
-            
-            %fclose(ef);
+          
             
             
             
@@ -278,7 +254,7 @@ classdef S4interfaceSquareGeneral
             A = importdata([GAoptions.dir,dataFilename,'.E']); %Load data from script
             delete([GAoptions.dir,dataFilename,'.E']); %Clear data file for reuse
             delete([GAoptions.dir,dataFilename,'.H']);
-%delete([scriptFilename]);
+            delete([scriptFilename]);
             
             
             Ex = A(:,4) + 1i*A(:,5);
@@ -398,9 +374,6 @@ delete([scriptFilename]);
             end
             
             
-            figure
-            hold on
-            axis([-periodX, periodX*2, -periodY, periodY*2])
             
             if strcmp(GAoptions.lattice,'square')
                 %Define block dimensions and positions:
@@ -420,14 +393,7 @@ delete([scriptFilename]);
                             %                       centerY = (stripeEnd + lastY)/2 * periodY + vertOffset;
                             centerY = (stripeEnd + lastY)/2 * periodY
                             widthY = (stripeEnd - lastY) * periodY
-                            %varScript = [varScript, 'S:SetLayerPatternRectangle(''Grating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
                             setLayerScript = [setLayerScript, sprintf('S:SetLayerPatternRectangle(''Grating'', ''SU8'', {%1.7f,%1.7f}, 0, {%1.7f,%1.7f}) \r\n',centerX,centerY,widthX/2,widthY/2)];
-                            %varScript = [varScript, 'S:SetLayerPatternRectangle(''SU8AirGrating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
-                            %layerScript = [layerScript, 'S:SetLayerPatternRectangle(''SU8MetalGrating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
-
-                        rectangle('Position',[centerX-widthX/2, centerY-widthY/2, widthX, widthY] )
-                        
-                        
                         
                         end
                         lastX = blockEnd;
@@ -453,20 +419,11 @@ delete([scriptFilename]);
                             centerY = (stripeEnd + lastY)/2 * periodY + vertOffset;
                             %centerY = (stripeEnd + lastY)/2 * periodY;
                             widthY = (stripeEnd - lastY) * periodY;
-                            %varScript = [varScript, 'S:SetLayerPatternRectangle(''Grating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
                             setLayerScript = [setLayerScript, sprintf('S:SetLayerPatternRectangle(''Grating'', ''SU8'', {%1.7f,%1.7f}, 0, {%1.7f,%1.7f}) \r\n',centerX,centerY,widthX/2,widthY/2)];
-                            %varScript = [varScript, 'S:SetLayerPatternRectangle(''SU8AirGrating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
-                            %layerScript = [layerScript, 'S:SetLayerPatternRectangle(''SU8MetalGrating'', ''SU8'', {', num2str(centerX),',',num2str(centerY),'}, 0, {',num2str(widthX/2),',',num2str(widthY/2),'}) \r\n'];
-
-                           rectangle('Position',[centerX-widthX/2, centerY-widthY/2, widthX, widthY] )
-                        
-                        
-                        
                         end
                         lastX = blockEnd;
                     end
                     lastY = stripeEnd;
-                    %horiOffset = lastY/2
                 end                
                 
             end
@@ -495,9 +452,7 @@ delete([scriptFilename]);
             
             %Write strings to file and run:
             ef=fopen([GAoptions.dir,scriptFilename],'w');  %open/create file
-            %fprintf(ef,[S.setBasicScript,S.setMaterialsScript,setLayerScript,excitationScript, setDataFilenameScript, S.collectDataScript]);
             fprintf(ef,[S.setBasicScript,setMaterialsScript,setLayerScript,excitationScript, setDataFilenameScript, S.collectDataScript, S.getAmplitudesScript]);
-            %fprintf(ef,[S.constScript1,varScript,S.constScript2,excitationScript,S.constScript3]);
             fclose(ef);
             
             
