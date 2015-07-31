@@ -30,8 +30,8 @@ classdef OffsetConductor
             rem_x = O.cells(1) - offset_x;  %remaining cells that need to be shifted down
             offset_y = floor( offset_y*O.cells(2) );
             rem_y = O.cells(2) - offset_y;
-            offset_z = floor( offset_z*O.cells(3) )
-            rem_z = O.cells(3) - offset_z
+            offset_z = floor( offset_z*O.cells(3) );
+            rem_z = O.cells(3) - offset_z;
             
             
             switch O.offsetType
@@ -74,11 +74,11 @@ classdef OffsetConductor
                     
                     
                     %offsetZ:
-                    sizeall = size(matrixIn)
+                    %sizeall = size(matrixIn)
                     tempVol = matrixIn(:,:, 1:offset_z);  %lower section to be moved to upper end
-                    sizetemp = size(tempVol)
-                    sizeL = size( matrixIn(:,:, 1:rem_z) )
-                    sizeR = size( matrixIn(:,:, (offset_z+1):end) )
+                    %sizetemp = size(tempVol)
+                    %sizeL = size( matrixIn(:,:, 1:rem_z) )
+                    %sizeR = size( matrixIn(:,:, (offset_z+1):end) )
                     %testout = matrixIn(:,:, (offset_z+1):end)
                     matrixIn(:,:, 1:rem_z) = matrixIn(:,:, (offset_z+1):end); %shift upper section down
                     matrixIn(:,:, rem_z+1:end) = tempVol; %fill in upper section

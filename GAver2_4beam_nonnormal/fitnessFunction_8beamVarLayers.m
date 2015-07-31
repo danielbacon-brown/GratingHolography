@@ -17,10 +17,8 @@ end
 [gratingChromosome ,incidentLightChromosome, offsetChromosome,layerChromosome,materialChromosome ] = splitChromosome(chromosome,[ ...
     GAoptions.gratingFunction.getChromosomeSize(), ...
     GAoptions.incidentLightFunction.getChromosomeSize(),  ...
-    ...GAoptions.calcStructureFunction.getChromosomeSize() ...
     GAoptions.offsetConductor.getChromosomeSize(), ...
     chromNlayer ...
-    ...sum(GAoptions.S4interfaceOptions.layers(:).getChromosomeSize()) ...
     chromNmaterial ...
     ]);
 
@@ -52,11 +50,6 @@ end
 %Generate Grating
 grating = GAoptions.gratingFunction.generateGrating(gratingChromosome);
 
-%TEST!!!!!!!!!!!!!!!!!
-%GAoptions.fill = 0.85
-%grating = createTestGrating();
-
-
 if exist('doPlots','var')
     GAoptions.gratingFunction.plotGrating(grating);  %plot grating
 end
@@ -70,18 +63,6 @@ if exist('doPlots','var')
    GAoptions.incidentLightFunction.plotPolarizationEsp(incidentFieldParams.Esp); 
 end
 
-%TEST!!!!!!!!!
-%incidentEsp = [0;1];
-
-
-% %Do RCWA analysis with GD-Calc:
-% %[~, scat_field, ~] = gdc(grating,incidentField,GAoptions.gratingOptions.order);
-% 
-% %Calculate propagating diffracted beams
-% %[E231, k231] = field_convert(incidentEsp,scat_field);  %DO OWN REWRITE
-% 
-% %Calculate intensity distribution:
-% %intensityDist = GAoptions.calcStructureFunction.calcIntensity( E231,k231,GAoptions.dimensions,GAoptions.cells,offsetChromosome);
 
 %Do RCWA analysis with S4:
 intensityDist = GAoptions.S4interface.doRCWA(GAoptions,grating,incidentFieldParams,layerChromosomes,materialChromosomes);  %Note: this intensityDist is based on a hexagonal parallelogram
@@ -111,9 +92,86 @@ if exist('doPlots','var') %Plot simulated structure
     camlight
     axis equal
     lighting gouraud
-    xlim([1 size(intensityDist,1)+2])
-    ylim([1 size(intensityDist,2)+2])
+    xlim([1 size(intensityDist,2)+2])
+    ylim([1 size(intensityDist,1)+2])
     zlim([1 size(intensityDist,3)+2])
+    
+    
+    if strcmp(GAoptions.lattice, 'square') && ~strcmp(strtrim(hostname),'Daniel-netbook')
+        
+        
+        %Do Lumerical simulation
+        writeLumericalRunFileSquare(GAoptions, intensityDist>threshold);
+        system(['fdtd-solutions -run ', GAoptions.dir, GAoptions.LumRunScript]);
+        while(~exist([GAoptions.dir,GAoptions.currentLumResultsFile,'.mat'],'file'))
+            pause(0.1)
+        end
+        LumResults = load([GAoptions.dir,GAoptions.currentLumResultsFile]);
+        transmissionRight = LumResults.transmission_right/sqrt(2);
+        transmissionLeft = LumResults.transmission_left/sqrt(2);
+        reflectionRight = LumResults.reflection_right*-1/sqrt(2);
+        reflectionLeft = LumResults.reflection_left*-1/sqrt(2);
+        
+        %Plot transmission and reflection of RCP and LCP waves
+        figure
+        frequencies = linspace(2.99e8/GAoptions.fdtd.maxMeasWL, 2.99e8/GAoptions.fdtd.minMeasWL, GAoptions.fdtd.numMeasWL); %Linear in frequency space
+        %wavelengths = linspace(GAoptions.fdtd.minMeasWL,GAoptions.fdtd.maxMeasWL,GAoptions.fdtd.numMeasWL);
+        wavelengths = 2.99e8./frequencies; %Convert to wavelength
+        plot(wavelengths,transmissionRight,'r',wavelengths,transmissionLeft,'b');
+        figure
+        plot(wavelengths,reflectionRight,'r',wavelengths,reflectionLeft,'b');
+        
+
+    elseif strcmp(GAoptions.lattice, 'hexagonal')
+        %If hexagonal, convert to cartesian system for plotting and lumerical:
+        intensityDist = hex2cart(intensityDist, GAoptions.cellsCart);
+        
+        %Plot cartesian
+        figure
+        patched = patch(isosurface(padarray(intensityDist,[1,1,1],100),threshold));
+        set(patched,'FaceColor', [30 255 30]/256, 'EdgeColor', 'none');
+        view(3);
+        camlight
+        axis equal
+        lighting gouraud
+        xlim([1 size(intensityDist,2)+2])
+        ylim([1 size(intensityDist,1)+2])
+        zlim([1 size(intensityDist,3)+2])
+        
+       % if ~strcmp(strtrim(GAoptions.hostname),'Daniel-netbook')
+            %Do Lumerical simulation
+            
+            %Make hexagonal repeat of structure:
+            lx = size(intensityDist,1);
+            left = intensityDist(1:floor(lx/2),:,:);
+            right = intensityDist((floor(lx/2)+1):end,:,:);
+            top = cat(1,right,left);
+            intensityDistComb = cat(2,intensityDist,top);
+            
+            writeLumericalRunFileSquare(GAoptions, intensityDistComb>threshold);
+            system(['fdtd-solutions -run ', GAoptions.dir, GAoptions.LumRunScript]);
+            while(~exist([GAoptions.dir,GAoptions.currentLumResultsFile,'.mat'],'file'))
+                pause(0.1)
+            end
+            LumResults = load([GAoptions.dir,GAoptions.currentLumResultsFile]);
+            transmissionRight = LumResults.transmission_right/sqrt(2);
+            transmissionLeft = LumResults.transmission_left/sqrt(2);
+            reflectionRight = LumResults.reflection_right*-1/sqrt(2);
+            reflectionLeft = LumResults.reflection_left*-1/sqrt(2);
+            
+            %Plot transmission and reflection of RCP and LCP waves
+            figure
+            frequencies = linspace(2.99e8/GAoptions.fdtd.maxMeasWL, 2.99e8/GAoptions.fdtd.minMeasWL, GAoptions.fdtd.numMeasWL); %Linear in frequency space
+            %wavelengths = linspace(GAoptions.fdtd.minMeasWL,GAoptions.fdtd.maxMeasWL,GAoptions.fdtd.numMeasWL);
+            wavelengths = 2.99e8./frequencies; %Convert to wavelength
+            plot(wavelengths,transmissionRight,'r',wavelengths,transmissionLeft,'b');
+            figure
+            plot(wavelengths,reflectionRight,'r',wavelengths,reflectionLeft,'b');
+        
+      %  end
+        
+    end
+    
     
 %     
 %     %Do Lumerical simulation
@@ -154,8 +212,8 @@ if exist('doPlots','var') %Plot simulated structure
     camlight
     axis equal
     lighting gouraud
-    xlim([1 size(acidCount,1)+2])
-    ylim([1 size(acidCount,2)+2])
+    xlim([1 size(acidCount,2)+2])
+    ylim([1 size(acidCount,1)+2])
     zlim([1 size(acidCount,3)+2])
     
     
@@ -176,8 +234,8 @@ if exist('doPlots','var') %Plot simulated structure
     camlight
     axis equal
     lighting gouraud
-    xlim([1 size(acidCount,1)+2])
-    ylim([1 size(acidCount,2)+2])
+    xlim([1 size(acidCount,2)+2])
+    ylim([1 size(acidCount,1)+2])
     zlim([1 size(acidCount,3)+2])
     
     
@@ -198,10 +256,6 @@ if exist('doPlots','var') %Plot simulated structure
 %     zlim([1 size(intensityDistRepeat,3)+2])
     
     
-    %Save grating and incident field for S4 simulation
-%    save('lastGratingandField','grating','incidentEsp')
-    
-%    doS4(grating,incidentEsp)
     
 end
         

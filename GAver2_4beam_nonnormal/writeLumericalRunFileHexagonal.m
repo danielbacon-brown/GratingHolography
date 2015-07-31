@@ -1,19 +1,12 @@
-function writeLumericalRunFileSquare( options, structureSU8)
+function writeLumericalRunFileHexagonal( options, structureSU8)
 %This writes the Lumerical Script that imports the structure, runs the
 %simulation, and exports the data.
-%Assume that if the structure is hexagonal, the structure includes 2
-%periods in Y.
 
 runout = fopen([options.dir,options.LumRunScript], 'w');
 
 
-Nx = size(structureSU8,1);
-Ny = size(structureSU8,2);
-Nz = size(structureSU8,3);
-
 %Create repeat structure
 structureSU8 = repmat(structureSU8,[1,1,options.fdtd.repeatUnits]);
-
 
 
 
@@ -89,29 +82,20 @@ if options.fdtd.addCubesDirectly
     fprintf(runout,'redrawoff; \n');
     
     
-    dx = options.dimensions(1)/Nx*1e-6;
-    if strcmp(options.lattice,'square')
-        dy = options.dimensions(2)/Ny*1e-6;
-    elseif strcmp(options.lattice,'hexagonal')
-        dy = options.dimensions(2)*2/Ny*1e-6;
-    end
-    dz = options.dimensions(3)*options.fdtd.shrinkFactor/Nz*1e-6;
+    dx = options.dimensions(1)/options.cells(1)*1e-6;
+    dy = options.dimensions(2)/options.cells(2)*1e-6;
+    dz = options.dimensions(3)*options.fdtd.shrinkFactor/options.cells(3)*1e-6;
     %initial rect that will be copied
     fprintf(runout,'addrect; set("name","base"); set("x span",%e); set("y span",%e); set("z span",%e); \n',...
         dx, dy, dz);
     %fprintf(runout,'set("material","Au (Gold) - CRC"); \n');
     fprintf(runout,'set("material","Ag (Silver) - CRC"); \n');
 
-    if strcmp(options.lattice,'square')
-        fprintf(runout,'set("x",%e); set("y",%e); set("z",%e); \n', -options.dimensions(1)/2*1e-6 - dx/2, -options.dimensions(2)/2*1e-6 - dy/2, -structureThickness/2*1e-6 - dz/2);
-    elseif strcmp(options.lattice,'hexagonal')
-        fprintf(runout,'set("x",%e); set("y",%e); set("z",%e); \n', -options.dimensions(1)/2*1e-6 - dx/2, -options.dimensions(2)*1e-6 - dy/2, -structureThickness/2*1e-6 - dz/2);
-
-    end
+    fprintf(runout,'set("x",%e); set("y",%e); set("z",%e); \n', -options.dimensions(1)/2*1e-6 - dx/2, -options.dimensions(2)/2*1e-6 - dy/2, -structureThickness/2*1e-6 - dz/2);
     %fprintf(runout,'set("x",%e); set("y",%e); set("z",%e); \n', -options.dimensions(1)/2*1e-6 - dx/2, -2*options.dimensions(2)/2*1e-6 - dy/2, -param.Z_T_shrunk/2*1e-6 - dz/2 - param.Z_T_shrunk*1e-6*(options.Nstructrepeat-1)/2);
-    for i = 1:Nx
-        for j = 1:Ny
-            for k = 1:Nz*options.fdtd.repeatUnits
+    for i = 1:options.cells(1)
+        for j = 1:options.cells(2)
+            for k = 1:options.cells(3)*options.fdtd.repeatUnits
                 if ~structureSU8(i,j,k)
                     fprintf(runout,'select("base"); copy(%e,%e,%e); set("name","%s"); \n',i*dx,j*dy,k*dz, 'C');
                 end
@@ -162,12 +146,7 @@ end
 function setXY(runout,options)
     fprintf(runout,'set("x", 0); \n');
     fprintf(runout,'set("y", 0); \n');
-    if strcmp(options.lattice,'square')
-        fprintf(runout,'set("x span", %e ); \n', options.dimensions(1)*1e-6);
-        fprintf(runout,'set("y span", %e ); \n', options.dimensions(2)*1e-6);
-    elseif strcmp(options.lattice,'hexagonal')
-        fprintf(runout,'set("x span", %e ); \n', options.dimensions(1)*1e-6);
-        fprintf(runout,'set("y span", %e ); \n', options.dimensions(2)*2*1e-6);        
-    end
+    fprintf(runout,'set("x span", %e ); \n', options.dimensions(1)*1e-6);
+    fprintf(runout,'set("y span", %e ); \n', options.dimensions(2)*1e-6);
 
 end
