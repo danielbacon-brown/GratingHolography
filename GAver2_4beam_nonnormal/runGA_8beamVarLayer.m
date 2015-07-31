@@ -60,31 +60,51 @@ GAoptions.hostname = strtrim(hostname);
     
 
     %%%%%% Lattice Dimensions %%%%%
+    GAoptions.normalIncidence = 1; 
     GAoptions.laserWavelength = 0.532; %um
-    GAoptions.C_over_A = 1;    %Max C/A for air gap is 0.578 %for PDMS prism, max C/A = 1.396
-    %GAoptions.lattice = 'square';
-    GAoptions.lattice = 'hexagonal';
+    GAoptions.C_over_A = 1;    %Max C/A for air gap is 0.578 %for PDMS prism, max C/A = 1.396 %Will be overwritten if normal incidence
+    GAoptions.lattice = 'square';
+    %GAoptions.lattice = 'hexagonal';
     GAoptions.n_PR = 1.58; %refractive index of the photoresist (SU8)
     GAoptions.n_substrate = 1.50;   %Glass slide as substrate
     %GAoptions.n_substrate = GAoptions.n_PR;
     %GAoptions.n_prism = 1.5; %glass prism
     %GAoptions.n_prism = 1; %no prism
     GAoptions.n_gratingVoid = 1; %assuming vacuum-SU8 grating
-    %This assumes the 4-beam symmetric configuration
-    if strcmp(GAoptions.lattice, 'square')
-        GAoptions.period = GAoptions.laserWavelength/(2*GAoptions.n_PR) * sqrt(2+1/(GAoptions.C_over_A^2));
-    elseif strcmp(GAoptions.lattice, 'hexagonal')
-        GAoptions.period = GAoptions.laserWavelength/GAoptions.n_PR/2 * sqrt( 1/GAoptions.C_over_A^2 + (4/3)^2)
+    
+    %Periodicity
+    if GAoptions.normalIncidence %Normally incident light
+        
+        if strcmp(GAoptions.lattice, 'square')
+            GAoptions.period = 3 * GAoptions.laserWavelength/(sqrt(2)*2*GAoptions.n_PR);
+            GAoptions.C_over_A = sqrt(2);
+        elseif strcmp(GAoptions.lattice, 'hexagonal')
+            GAoptions.period = sqrt(3)*GAoptions.laserWavelength/ (sqrt(2)*GAoptions.n_PR);
+            GAoptions.C_over_A = sqrt(3)/sqrt(2);
+        end
+        
+        
+    else   %Non-normal incidence
+        
+        if strcmp(GAoptions.lattice, 'square')
+            GAoptions.period = GAoptions.laserWavelength/(2*GAoptions.n_PR) * sqrt(2+1/(GAoptions.C_over_A^2));
+        elseif strcmp(GAoptions.lattice, 'hexagonal')
+            GAoptions.period = GAoptions.laserWavelength/GAoptions.n_PR/2 * sqrt( 1/GAoptions.C_over_A^2 + (4/3)^2)
+        end
+
     end
-    GAoptions.cells = floor(25*[1,1,GAoptions.C_over_A]); %number of 'ticks' in each dimension
+    
+    %Cell # and dimensions
+    GAoptions.repeatingUnits = 1;  %Used as a test for periodicity, should be 1 for actual optimization
+    GAoptions.cells = floor(25*[1,1,GAoptions.C_over_A*GAoptions.repeatingUnits]); %number of 'ticks' in each dimension
     if strcmp(GAoptions.lattice, 'square')
         GAoptions.dimensions = [GAoptions.period, GAoptions.period, GAoptions.period*GAoptions.C_over_A]; %dimensions of unit cell
     elseif strcmp(GAoptions.lattice, 'hexagonal')
         GAoptions.dimensions = [GAoptions.period, GAoptions.period*sqrt(3)/2, GAoptions.period*GAoptions.C_over_A]; %dimensions of unit cell
-        GAoptions.cellsCart = floor(10*[1,sqrt(3)/2,GAoptions.C_over_A]) %Cells for when converting to cartesian coordinates (plotting and Lumerical)
+        GAoptions.cellsCart = floor(20*[1,sqrt(3)/2,GAoptions.C_over_A*GAoptions.repeatingUnits]) %Cells for when converting to cartesian coordinates (plotting and Lumerical)
     end
     
-    %Vectors describing periodicity:
+    %Vectors describing periodicity (for target structure)
     if strcmp(GAoptions.lattice, 'square')
         GAoptions.u = [GAoptions.period,0,0];
         GAoptions.v = [0,GAoptions.period,0];
@@ -102,6 +122,7 @@ GAoptions.hostname = strtrim(hostname);
     
     
     %%%%% Incident light %%%%%
+    incidentLightOptions.normalIncidence = GAoptions.normalIncidence;
     incidentLightOptions.wavelength = GAoptions.laserWavelength ;  %um
     incidentLightOptions.lattice = GAoptions.lattice;
     incidentLightOptions.chromNpsi = 8;
@@ -112,7 +133,8 @@ GAoptions.hostname = strtrim(hostname);
     incidentLightOptions.C_over_A = GAoptions.C_over_A;
     incidentLightOptions.beamPowerDens = 20935  %W/m^2      %=20935W/m^2
     GAoptions.incidentLightOptions = incidentLightOptions;
-    GAoptions.incidentLightFunction = IncidentLightAngled(incidentLightOptions);
+    %GAoptions.incidentLightFunction = IncidentLightAngled(incidentLightOptions);
+    GAoptions.incidentLightFunction = IncidentLightGeneral(incidentLightOptions);
 
 %For  GratingGrid
     gratingOptions.NblockX = 3;
@@ -124,7 +146,7 @@ GAoptions.hostname = strtrim(hostname);
     gratingOptions.n_void = GAoptions.n_gratingVoid;  %refractive index of void space of grating
     gratingOptions.C_over_A = GAoptions.C_over_A;
     gratingOptions.periodicity = GAoptions.period; 
-    gratingOptions.spacingMin = 0.2; %Minimum block width %relative to periodicity
+    gratingOptions.spacingMin = 0.15; %Minimum block width %relative to periodicity
     GAoptions.gratingOptions = gratingOptions;
     if strcmp(GAoptions.lattice, 'square')
         GAoptions.gratingFunction = GratingGridSquare(gratingOptions);
@@ -204,16 +226,28 @@ GAoptions.hostname = strtrim(hostname);
     
     %%%%% Layers: %%%%%    
     chromNlayer = 8;
+    
+    %Prism-coupled, glass->ITO->SU8->grating->vacuum
     S4interfaceOptions.layers(1) = Layer('Front','Glass',0);
     S4interfaceOptions.layers(2) = Layer('TCO','ITO',-1,0.015,0.15,chromNlayer);
     S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
     S4interfaceOptions.layers(4) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer); 
     S4interfaceOptions.layers(5) = Layer('Back','Vacuum', 0);
 
-
+    %Incident on air.  Air->grating->SU8->ITO->Glass
+    S4interfaceOptions.layers(1) = Layer('Front','Vacuum',0);
+    S4interfaceOptions.layers(2) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer);
+    S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
+    S4interfaceOptions.layers(4) = Layer('TCO','ITO',-1,0.015,0.15,chromNlayer);
+    S4interfaceOptions.layers(5) = Layer('Back','Glass', 0);
+    
+    
+    
+    
     %Writer for S4 runfile
     S4interfaceOptions.dimensions = GAoptions.dimensions;
     S4interfaceOptions.cells = GAoptions.cells;
+    S4interfaceOptions.repeatingUnits = GAoptions.repeatingUnits;
     S4interfaceOptions.lattice = GAoptions.lattice;
     GAoptions.S4interface = S4interfaceSquareGeneral(S4interfaceOptions)
     GAoptions.S4interfaceOptions = S4interfaceOptions;
