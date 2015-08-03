@@ -175,7 +175,8 @@ GAoptions.hostname = strtrim(hostname);
     targetStructureOptions.radl = GAoptions.period/8; %radius of the wire (um)
     targetStructureOptions.relativeZ = GAoptions.C_over_A; %ratio of height to width of ellipsoidal 'pen'
     GAoptions.targetStructureOptions = targetStructureOptions;
-    GAoptions.targetStructure = generateHelixStructureParallelogram(targetStructureOptions)  %Create helix
+    GAoptions.targetStructure = generateDoubleHelixStructureParallelogram(targetStructureOptions)  %Create double helix
+    %GAoptions.targetStructure = generateHelixStructureParallelogram(targetStructureOptions)  %Create helix
     targetfill = 1 - sum(sum(sum(GAoptions.targetStructure))) / (size(GAoptions.targetStructure,1)*size(GAoptions.targetStructure,1)*size(GAoptions.targetStructure,3));
 
     %This is a larger helix that counts as negative for filled spots outside of it
@@ -183,11 +184,12 @@ GAoptions.hostname = strtrim(hostname);
     exclusionStructureOptions.u = GAoptions.u;
     exclusionStructureOptions.v = GAoptions.v;
     exclusionStructureOptions.w = GAoptions.w;
-    exclusionStructureOptions.radb = GAoptions.period/5;
+    exclusionStructureOptions.radb = GAoptions.period/4;
     exclusionStructureOptions.radl = GAoptions.period/4;
     exclusionStructureOptions.relativeZ = GAoptions.C_over_A;  %ratio of height to width of ellipsoidal 'pen'
     GAoptions.exclusionStructureOptions = exclusionStructureOptions;
-    GAoptions.exclusionStructure = generateHelixStructureParallelogram(exclusionStructureOptions)  %Helix
+    GAoptions.exclusionStructure = generateDoubleHelixStructureParallelogram(exclusionStructureOptions)  %Create double helix
+    %GAoptions.exclusionStructure = generateHelixStructureParallelogram(exclusionStructureOptions)  %Helix
     exclusionfill = 1 - sum(sum(sum(GAoptions.exclusionStructure))) / (size(GAoptions.exclusionStructure,1)*size(GAoptions.exclusionStructure,1)*size(GAoptions.exclusionStructure,3));
     
     GAoptions.fill = (targetfill+exclusionfill)/2;  %Matches interference pattern fill to average of the target and exclusion structures. Consider adding fill factor to chromosome
