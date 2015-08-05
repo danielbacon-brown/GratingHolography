@@ -92,9 +92,9 @@ if exist('doPlots','var') %Plot simulated structure
     camlight
     axis equal
     lighting gouraud
-    xlim([1 size(intensityDist,2)+2])
-    ylim([1 size(intensityDist,1)+2])
-    zlim([1 size(intensityDist,3)+2])
+    xlim([2 size(intensityDist,2)+1])
+    ylim([2 size(intensityDist,1)+1])
+    zlim([2 size(intensityDist,3)+1])
     
     
     if strcmp(GAoptions.lattice, 'square') && ~strcmp(strtrim(GAoptions.hostname),'Daniel-netbook')
@@ -134,9 +134,9 @@ if exist('doPlots','var') %Plot simulated structure
         camlight
         axis equal
         lighting gouraud
-        xlim([1 size(intensityDist,2)+2])
-        ylim([1 size(intensityDist,1)+2])
-        zlim([1 size(intensityDist,3)+2])
+        xlim([2 size(intensityDist,2)+1])
+        ylim([2 size(intensityDist,1)+1])
+        zlim([2 size(intensityDist,3)+1])
         
         if ~strcmp(strtrim(GAoptions.hostname),'Daniel-netbook')
             %Do Lumerical simulation
@@ -212,9 +212,9 @@ if exist('doPlots','var') %Plot simulated structure
     camlight
     axis equal
     lighting gouraud
-    xlim([1 size(acidCount,2)+2])
-    ylim([1 size(acidCount,1)+2])
-    zlim([1 size(acidCount,3)+2])
+    xlim([2 size(acidCount,2)+1])
+    ylim([2 size(acidCount,1)+1])
+    zlim([2 size(acidCount,3)+1])
     
     
     %DO SMOOTHING//DIFFUSION (WITH SUMMING)
@@ -234,9 +234,9 @@ if exist('doPlots','var') %Plot simulated structure
     camlight
     axis equal
     lighting gouraud
-    xlim([1 size(acidCount,2)+2])
-    ylim([1 size(acidCount,1)+2])
-    zlim([1 size(acidCount,3)+2])
+    xlim([2 size(acidCount,2)+1])
+    ylim([2 size(acidCount,1)+1])
+    zlim([2 size(acidCount,3)+1])
     
     
     %CALCULATE REPEAT CELLS

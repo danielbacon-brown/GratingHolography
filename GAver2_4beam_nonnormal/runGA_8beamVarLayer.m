@@ -10,8 +10,8 @@ function runGA_8beamVarLayer
 GAoptions.hostname = strtrim(hostname);
 
 %%%%% Genetic Algorithm Options %%%%%
-    GAoptions.popSize = 6;
-    GAoptions.numGen = 1;
+    GAoptions.popSize = 10000;
+    GAoptions.numGen = 10;
     GAoptions.elite = 1;
     GAoptions.numRepetitions = 1; %Number of times to repeat the GA
     %Options for built-in GA algorithm:
@@ -63,8 +63,8 @@ GAoptions.hostname = strtrim(hostname);
     GAoptions.normalIncidence = 1;  
     GAoptions.laserWavelength = 0.532; %um
     GAoptions.C_over_A = 1;    %Max C/A for air gap is 0.578 %for PDMS prism, max C/A = 1.396 %Will be overwritten if normal incidence
-    GAoptions.lattice = 'square';
-    %GAoptions.lattice = 'hexagonal';
+    %GAoptions.lattice = 'square';
+    GAoptions.lattice = 'hexagonal';
     GAoptions.n_PR = 1.58; %refractive index of the photoresist (SU8)
     GAoptions.n_substrate = 1.50;   %Glass slide as substrate
     %GAoptions.n_substrate = GAoptions.n_PR;
@@ -171,7 +171,7 @@ GAoptions.hostname = strtrim(hostname);
     targetStructureOptions.u = GAoptions.u;
     targetStructureOptions.v = GAoptions.v;
     targetStructureOptions.w = GAoptions.w;
-    targetStructureOptions.radb = GAoptions.period/5; %radius / distance of middle of helix to axis (um)
+    targetStructureOptions.radb = GAoptions.period/4; %radius / distance of middle of helix to axis (um)
     targetStructureOptions.radl = GAoptions.period/8; %radius of the wire (um)
     targetStructureOptions.relativeZ = GAoptions.C_over_A; %ratio of height to width of ellipsoidal 'pen'
     GAoptions.targetStructureOptions = targetStructureOptions;
@@ -183,7 +183,7 @@ GAoptions.hostname = strtrim(hostname);
     exclusionStructureOptions.u = GAoptions.u;
     exclusionStructureOptions.v = GAoptions.v;
     exclusionStructureOptions.w = GAoptions.w;
-    exclusionStructureOptions.radb = GAoptions.period/5;
+    exclusionStructureOptions.radb = GAoptions.period/4;
     exclusionStructureOptions.radl = GAoptions.period/4;
     exclusionStructureOptions.relativeZ = GAoptions.C_over_A;  %ratio of height to width of ellipsoidal 'pen'
     GAoptions.exclusionStructureOptions = exclusionStructureOptions;
@@ -234,12 +234,12 @@ GAoptions.hostname = strtrim(hostname);
     S4interfaceOptions.layers(4) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer); 
     S4interfaceOptions.layers(5) = Layer('Back','Vacuum', 0);
 
-    %Incident on air.  Air->grating->SU8->ITO->Glass
-    S4interfaceOptions.layers(1) = Layer('Front','Vacuum',0);
-    S4interfaceOptions.layers(2) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer);
-    S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
-    S4interfaceOptions.layers(4) = Layer('TCO','ITO',-1,0.015,0.15,chromNlayer);
-    S4interfaceOptions.layers(5) = Layer('Back','Glass', 0);
+%     %Incident on air.  Air->grating->SU8->ITO->Glass
+%     S4interfaceOptions.layers(1) = Layer('Front','Vacuum',0);
+%     S4interfaceOptions.layers(2) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer);
+%     S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
+%     S4interfaceOptions.layers(4) = Layer('TCO','ITO',-1,0.015,0.15,chromNlayer);
+%     S4interfaceOptions.layers(5) = Layer('Back','Glass', 0);
     
     
     
