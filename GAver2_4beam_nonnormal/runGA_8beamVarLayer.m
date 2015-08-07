@@ -10,15 +10,15 @@ function runGA_8beamVarLayer
 GAoptions.hostname = strtrim(hostname);
 
 %%%%% Genetic Algorithm Options %%%%%
-    GAoptions.popSize = 1000;
-    GAoptions.numGen = 5;
+    GAoptions.popSize = 6;
+    GAoptions.numGen = 1;
     GAoptions.elite = 1;
     GAoptions.numRepetitions = 1; %Number of times to repeat the GA
     %Options for built-in GA algorithm:
     if strcmp(strtrim(hostname),'lotus-bud')
         UseParallelVar = true;
     elseif strcmp(strtrim(hostname),'berzerk')
-        UseParallelVar = 'always';
+        UseParallelVar = 'always'
     elseif strcmp(strtrim(hostname),'Daniel-netbook')
         UseParallelVar = 'never';
     end
@@ -55,25 +55,24 @@ GAoptions.hostname = strtrim(hostname);
     GAoptions.GARecordFileBase = 'GAResults';  %Stores results
     GAoptions.currentLumSave = 'LumSave.fsp';
     GAoptions.LumRunScript = 'LumRun.lsf';
-    GAoptions.currentLumResultsFile = 'LumResults';
+    GAoptions.currentLumResultsFile = 'LumResults'
     
     
 
     %%%%%% Lattice Dimensions %%%%%
-    GAoptions.normalIncidence = 0;  
+    GAoptions.normalIncidence = 1; 
     GAoptions.laserWavelength = 0.532; %um
     GAoptions.C_over_A = 1;    %Max C/A for air gap is 0.578 %for PDMS prism, max C/A = 1.396 %Will be overwritten if normal incidence
-    %GAoptions.lattice = 'square';
-    GAoptions.lattice = 'hexagonal';
+    GAoptions.lattice = 'square';
+    %GAoptions.lattice = 'hexagonal';
     GAoptions.n_PR = 1.58; %refractive index of the photoresist (SU8)
     GAoptions.n_substrate = 1.50;   %Glass slide as substrate
-    GAoptions.n_front = 1.43;
     %GAoptions.n_substrate = GAoptions.n_PR;
     %GAoptions.n_prism = 1.5; %glass prism
     %GAoptions.n_prism = 1; %no prism
     GAoptions.n_gratingVoid = 1; %assuming vacuum-SU8 grating
     
-    %Periodicity    
+    %Periodicity
     if GAoptions.normalIncidence %Normally incident light
         
         if strcmp(GAoptions.lattice, 'square')
@@ -90,7 +89,7 @@ GAoptions.hostname = strtrim(hostname);
         if strcmp(GAoptions.lattice, 'square')
             GAoptions.period = GAoptions.laserWavelength/(2*GAoptions.n_PR) * sqrt(2+1/(GAoptions.C_over_A^2));
         elseif strcmp(GAoptions.lattice, 'hexagonal')
-            GAoptions.period = GAoptions.laserWavelength/GAoptions.n_PR/2 * sqrt( 1/GAoptions.C_over_A^2 + (4/3)^2);
+            GAoptions.period = GAoptions.laserWavelength/GAoptions.n_PR/2 * sqrt( 1/GAoptions.C_over_A^2 + (4/3)^2)
         end
 
     end
@@ -102,7 +101,7 @@ GAoptions.hostname = strtrim(hostname);
         GAoptions.dimensions = [GAoptions.period, GAoptions.period, GAoptions.period*GAoptions.C_over_A]; %dimensions of unit cell
     elseif strcmp(GAoptions.lattice, 'hexagonal')
         GAoptions.dimensions = [GAoptions.period, GAoptions.period*sqrt(3)/2, GAoptions.period*GAoptions.C_over_A]; %dimensions of unit cell
-        GAoptions.cellsCart = floor(20*[1,sqrt(3)/2,GAoptions.C_over_A*GAoptions.repeatingUnits]); %Cells for when converting to cartesian coordinates (plotting and Lumerical)
+        GAoptions.cellsCart = floor(20*[1,sqrt(3)/2,GAoptions.C_over_A*GAoptions.repeatingUnits]) %Cells for when converting to cartesian coordinates (plotting and Lumerical)
     end
     
     %Vectors describing periodicity (for target structure)
@@ -129,10 +128,10 @@ GAoptions.hostname = strtrim(hostname);
     incidentLightOptions.chromNpsi = 8;
     incidentLightOptions.chromNchi = 8;
     incidentLightOptions.n_interference = GAoptions.n_PR;
-    incidentLightOptions.n_incidence = GAoptions.n_front; %The refractive index of the material that the plane wave is in
+    incidentLightOptions.n_incidence = GAoptions.n_substrate; %The refractive index of the material that the plane wave is in
     incidentLightOptions.period = GAoptions.period;
     incidentLightOptions.C_over_A = GAoptions.C_over_A;
-    incidentLightOptions.beamPowerDens = 20935;  %W/m^2      %=20935W/m^2
+    incidentLightOptions.beamPowerDens = 20935  %W/m^2      %=20935W/m^2
     GAoptions.incidentLightOptions = incidentLightOptions;
     %GAoptions.incidentLightFunction = IncidentLightAngled(incidentLightOptions);
     GAoptions.incidentLightFunction = IncidentLightGeneral(incidentLightOptions);
@@ -172,11 +171,12 @@ GAoptions.hostname = strtrim(hostname);
     targetStructureOptions.u = GAoptions.u;
     targetStructureOptions.v = GAoptions.v;
     targetStructureOptions.w = GAoptions.w;
-    targetStructureOptions.radb = GAoptions.period/4; %radius / distance of middle of helix to axis (um)
+    targetStructureOptions.radb = GAoptions.period/5; %radius / distance of middle of helix to axis (um)
     targetStructureOptions.radl = GAoptions.period/8; %radius of the wire (um)
     targetStructureOptions.relativeZ = GAoptions.C_over_A; %ratio of height to width of ellipsoidal 'pen'
     GAoptions.targetStructureOptions = targetStructureOptions;
-    GAoptions.targetStructure = generateHelixStructureParallelogram(targetStructureOptions);  %Create helix
+    GAoptions.targetStructure = generateDoubleHelixStructureParallelogram(targetStructureOptions)  %Create double helix
+    %GAoptions.targetStructure = generateHelixStructureParallelogram(targetStructureOptions)  %Create helix
     targetfill = 1 - sum(sum(sum(GAoptions.targetStructure))) / (size(GAoptions.targetStructure,1)*size(GAoptions.targetStructure,1)*size(GAoptions.targetStructure,3));
 
     %This is a larger helix that counts as negative for filled spots outside of it
@@ -188,7 +188,8 @@ GAoptions.hostname = strtrim(hostname);
     exclusionStructureOptions.radl = GAoptions.period/4;
     exclusionStructureOptions.relativeZ = GAoptions.C_over_A;  %ratio of height to width of ellipsoidal 'pen'
     GAoptions.exclusionStructureOptions = exclusionStructureOptions;
-    GAoptions.exclusionStructure = generateHelixStructureParallelogram(exclusionStructureOptions);  %Helix
+    GAoptions.exclusionStructure = generateDoubleHelixStructureParallelogram(exclusionStructureOptions)  %Create double helix
+    %GAoptions.exclusionStructure = generateHelixStructureParallelogram(exclusionStructureOptions)  %Helix
     exclusionfill = 1 - sum(sum(sum(GAoptions.exclusionStructure))) / (size(GAoptions.exclusionStructure,1)*size(GAoptions.exclusionStructure,1)*size(GAoptions.exclusionStructure,3));
     
     GAoptions.fill = (targetfill+exclusionfill)/2;  %Matches interference pattern fill to average of the target and exclusion structures. Consider adding fill factor to chromosome
@@ -223,32 +224,24 @@ GAoptions.hostname = strtrim(hostname);
     S4interfaceOptions.materials(2) = Material('Glass',GAoptions.n_substrate);
     S4interfaceOptions.materials(3) = Material('ITO',1.94+0.046i);
     S4interfaceOptions.materials(4) = Material('SU8',GAoptions.n_PR);
-    S4interfaceOptions.materials(5) = Material('PDMS',1.43);
             
     
     %%%%% Layers: %%%%%    
     chromNlayer = 8;
     
-%     %Prism-coupled, glass->ITO->SU8->grating->vacuum
-%     S4interfaceOptions.layers(1) = Layer('Front','Glass',0);
-%     S4interfaceOptions.layers(2) = Layer('TCO','ITO',-1,0.015,0.15,chromNlayer);
-%     S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
-%     S4interfaceOptions.layers(4) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer); 
-%     S4interfaceOptions.layers(5) = Layer('Back','Vacuum', 0);
+    %Prism-coupled, glass->ITO->SU8->grating->vacuum
+    S4interfaceOptions.layers(1) = Layer('Front','Glass',0);
+    S4interfaceOptions.layers(2) = Layer('TCO','ITO',-1,0.015,0.15,chromNlayer);
+    S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
+    S4interfaceOptions.layers(4) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer); 
+    S4interfaceOptions.layers(5) = Layer('Back','Vacuum', 0);
 
-    %Prism-coupled directly to grating, PDMS->grating->SU8->ITO->glass
-    S4interfaceOptions.layers(1) = Layer('Front','PDMS',0);
-    S4interfaceOptions.layers(2) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer); 
+    %Incident on air.  Air->grating->SU8->ITO->Glass
+    S4interfaceOptions.layers(1) = Layer('Front','Vacuum',0);
+    S4interfaceOptions.layers(2) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer);
     S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
     S4interfaceOptions.layers(4) = Layer('TCO','ITO',-1,0.015,0.15,chromNlayer);
     S4interfaceOptions.layers(5) = Layer('Back','Glass', 0);
-
-%     %Incident on air.  Air->grating->SU8->ITO->Glass
-%     S4interfaceOptions.layers(1) = Layer('Front','Vacuum',0);
-%     S4interfaceOptions.layers(2) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer);
-%     S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
-%     S4interfaceOptions.layers(4) = Layer('TCO','ITO',-1,0.015,0.15,chromNlayer);
-%     S4interfaceOptions.layers(5) = Layer('Back','Glass', 0);
     
     
     
@@ -258,7 +251,7 @@ GAoptions.hostname = strtrim(hostname);
     S4interfaceOptions.cells = GAoptions.cells;
     S4interfaceOptions.repeatingUnits = GAoptions.repeatingUnits;
     S4interfaceOptions.lattice = GAoptions.lattice;
-    GAoptions.S4interface = S4interfaceSquareGeneral(S4interfaceOptions);
+    GAoptions.S4interface = S4interfaceSquareGeneral(S4interfaceOptions)
     GAoptions.S4interfaceOptions = S4interfaceOptions;
     
     %%%%% Do FDTD %%%%%
@@ -334,9 +327,9 @@ fitness = fitnessFunction_8beamVarLayers(GAoptions,chromosome,doPlots) %Should a
         
 %%%%% Declaration of Fitness Function %%%%%
     function fitness = gfit(chromosome)  %This is done so that it can pass GAoptions to the fitness function.
-        %tic
-        fitness = fitnessFunction_8beamVarLayers(GAoptions,chromosome);
-        %toc 
+        tic
+        fitness = fitnessFunction_8beamVarLayers(GAoptions,chromosome)
+        toc 
     end
 
 
