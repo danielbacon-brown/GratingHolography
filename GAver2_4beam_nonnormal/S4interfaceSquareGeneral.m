@@ -157,6 +157,10 @@ classdef S4interfaceSquareGeneral
             delete([GAoptions.dir,dataFilename,'.H']);
             delete([scriptFilename]);
             
+            if size(A,2)<9 %If data is full of NaN, skip it and move on
+                intensityDist = [];
+                return;
+            end
             
             Ex = A(:,4) + 1i*A(:,5);
             Ey = A(:,6) + 1i*A(:,7);
@@ -206,7 +210,10 @@ classdef S4interfaceSquareGeneral
             delete([GAoptions.dir,dataFilename,'.H']);
 delete([scriptFilename]);
             
-            
+            if size(A,2)<9 %If data is full of NaN, skip it and move on
+                intensityDist = [];
+                return;
+            end
 
 %FINISH
             if strcmp(GAoptions.lattice,'square')
