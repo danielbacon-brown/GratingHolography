@@ -140,9 +140,9 @@ GAoptions.hostname = strtrim(hostname);
     else   %Non-normal incidence
         
         if strcmp(GAoptions.lattice, 'square')
-            GAoptions.period = GAoptions.laserWavelength/(2*GAoptions.n_PR) * sqrt(2+1/(GAoptions.C_over_A^2));
+            GAoptions.period = GAoptions.laserWavelength/(2*GAoptions.n_PR) * sqrt(2+1/(GAoptions.C_over_A^2));  %for c/a<0.578, light can be coupled in without prism, but then can get transmitted modes in grating
         elseif strcmp(GAoptions.lattice, 'hexagonal')
-            GAoptions.period = GAoptions.laserWavelength/GAoptions.n_PR/2 * sqrt( 1/GAoptions.C_over_A^2 + (4/3)^2)
+            GAoptions.period = GAoptions.laserWavelength/GAoptions.n_PR/2 * sqrt( 1/GAoptions.C_over_A^2 + (4/3)^2); %for c/a<0.613, light can be coupled in without prism
         end
 
     end

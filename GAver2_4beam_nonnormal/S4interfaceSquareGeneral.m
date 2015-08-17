@@ -144,6 +144,8 @@ classdef S4interfaceSquareGeneral
             elseif strcmp(GAoptions.hostname,'berzerk')
                 %message = ['running: ', '~/S4/build/S4 ', GAoptions.dir,scriptFilename];
                 system(['~/S4/build/S4 ', GAoptions.dir,scriptFilename]);
+            elseif strcmp(GAoptions.hostname,'lotus-bud')
+                system(['~/S4mod/build/S4 ', GAoptions.dir,scriptFilename]);
             end
             %disp(['importing data: ', GAoptions.dir,dataFilename,'.E'])
             if ~exist([GAoptions.dir,dataFilename,'.E'],'file') %If you can't find the file, ignore it and move on
