@@ -34,9 +34,9 @@ classdef S4interfaceSquareGeneral
             
             %Define periodicity
             if strcmp(options.lattice,'square')
-                latticeStr = sprintf( 'S:SetLattice({%1.5f,%1.5f},{%1.5f,%1.5f}) \r\n',periodX,0,0,periodY)
+                latticeStr = sprintf( 'S:SetLattice({%1.5f,%1.5f},{%1.5f,%1.5f}) \r\n',periodX,0,0,periodY);
             elseif strcmp(options.lattice,'hexagonal')
-                latticeStr = sprintf( 'S:SetLattice({%1.5f,%1.5f},{%1.5f,%1.5f}) \r\n',periodX,0,periodX/2,periodY)
+                latticeStr = sprintf( 'S:SetLattice({%1.5f,%1.5f},{%1.5f,%1.5f}) \r\n',periodX,0,periodX/2,periodY);
             end
             
             S.setBasicScript = [ ...
@@ -67,8 +67,8 @@ classdef S4interfaceSquareGeneral
                 ...%cs2 = [cs2, '	S:GetFieldPlane(z, {',num2str(cells(1)),',',num2str(cells(2)),'}, ''FileAppend'', dataFilename) \r\n'];  %Uses the filename to be set in varScript
                 ...%cs2 = [cs2, '	print( z_i*',num2str(dimensions(3)/cells(3)),'+',num2str(z_offset),') \r\n'];
                 , 'end \r\n' ...
-                , 'nG = S:GetNumG() \r\n' ...
-                , 'print(nG) \r\n' ...
+                ..., 'nG = S:GetNumG() \r\n' ...
+                ..., 'print(nG) \r\n' ...
                 ];
             
             
@@ -86,22 +86,22 @@ classdef S4interfaceSquareGeneral
             S.getAmplitudesScript = '';  %Don't want to bother getting the amplitudes unless doing a check
             
 % KEEP FOR DEBUGGING DIFFRACTION ORDERS            
-            S.getAmplitudesScript = [ ...
-                'forw,back = S:GetAmplitudes(''PrInterference'',2.5) \n' ...
-                , 'print(''forward waves:'') \n'...
-                , 'for key,value in pairs(forw) do print(key, forw[key][1], forw[key][2]) end \n'...
-                , 'print(''backward waves:'') \n'...
-                , 'for key,value in pairs(back) do print(key, back[key][1], back[key][2]) end \n'...
-                , 'print(''Num G: '') \n' ...
-                , 'ng = S:GetNumG() \n' ...
-                , 'print(ng) \n'...
-                , 'print(''G list: '') \n' ...
-                , 'glist = S:GetGList() \n'...
-                , 'for key,value in pairs(glist) do print(key, glist[key][1], glist[key][2]) end \n'...
-                , 'S:OutputStructurePOVRay(''HelixPOVrayScript.pov'') \n ' ...
-                , 'Gu,Gv = S:GetReciprocalLattice() \n' ...
-                , 'print(''Gu '', Gu[1][1]*2*math.pi,'' '',Gu[1][2]*2*math.pi, ''     Gv '',Gu[2][1]*2*math.pi,'' '',Gu[2][2]*2*math.pi ) \n' ... [1],'' '',Gv[2]) \n' ...
-                ];
+%             S.getAmplitudesScript = [ ...
+%                 'forw,back = S:GetAmplitudes(''PrInterference'',2.5) \n' ...
+%                 , 'print(''forward waves:'') \n'...
+%                 , 'for key,value in pairs(forw) do print(key, forw[key][1], forw[key][2]) end \n'...
+%                 , 'print(''backward waves:'') \n'...
+%                 , 'for key,value in pairs(back) do print(key, back[key][1], back[key][2]) end \n'...
+%                 , 'print(''Num G: '') \n' ...
+%                 , 'ng = S:GetNumG() \n' ...
+%                 , 'print(ng) \n'...
+%                 , 'print(''G list: '') \n' ...
+%                 , 'glist = S:GetGList() \n'...
+%                 , 'for key,value in pairs(glist) do print(key, glist[key][1], glist[key][2]) end \n'...
+%                 , 'S:OutputStructurePOVRay(''HelixPOVrayScript.pov'') \n ' ...
+%                 , 'Gu,Gv = S:GetReciprocalLattice() \n' ...
+%                 , 'print(''Gu '', Gu[1][1]*2*math.pi,'' '',Gu[1][2]*2*math.pi, ''     Gv '',Gu[2][1]*2*math.pi,'' '',Gu[2][2]*2*math.pi ) \n' ... [1],'' '',Gv[2]) \n' ...
+%                 ];
 
 
 
@@ -131,23 +131,23 @@ classdef S4interfaceSquareGeneral
             t = num2str(randi(intmax()));
             
             if ~isempty(t)
-                dataFilename = sprintf( 'fieldData_%s', t )
-                scriptFilename = sprintf( 'automatedS4script_%s.lua', t )
+                dataFilename = sprintf( 'fieldData_%s', t );
+                scriptFilename = sprintf( 'automatedS4script_%s.lua', t );
             else
-                dataFilename = 'fieldData'
-                scriptFilename = 'automatedS4script.lua'
+                dataFilename = 'fieldData';
+                scriptFilename = 'automatedS4script.lua';
             end
             makeRunScript(S,GAoptions,grating,incidentFieldParams, dataFilename,scriptFilename,layerChromosomes,materialChromosomes); %Make script
             
             if strcmp(GAoptions.hostname,'Daniel-netbook')
                 system(['C:/Users/daniel/S4-1.1.1-win32/S4 ', GAoptions.dir,scriptFilename]); %Run script
             elseif strcmp(GAoptions.hostname,'berzerk')
-                message = ['running: ', '~/S4/build/S4 ', GAoptions.dir,scriptFilename]
+                %message = ['running: ', '~/S4/build/S4 ', GAoptions.dir,scriptFilename];
                 system(['~/S4/build/S4 ', GAoptions.dir,scriptFilename]);
             elseif strcmp(GAoptions.hostname,'lotus-bud')
                 system(['~/S4mod/build/S4 ', GAoptions.dir,scriptFilename]);
             end
-            disp(['importing data: ', GAoptions.dir,dataFilename,'.E'])
+            %disp(['importing data: ', GAoptions.dir,dataFilename,'.E'])
             if ~exist([GAoptions.dir,dataFilename,'.E'],'file') %If you can't find the file, ignore it and move on
                 intensityDist = [];
                 return;
@@ -182,18 +182,18 @@ classdef S4interfaceSquareGeneral
             t = num2str(randi(intmax()));
             
             if ~isempty(t)
-                dataFilename = sprintf( 'fieldData_%s', t )
-                scriptFilename = sprintf( 'automatedS4script_%s.lua', t )
+                dataFilename = sprintf( 'fieldData_%s', t );
+                scriptFilename = sprintf( 'automatedS4script_%s.lua', t );
             else
-                dataFilename = 'fieldData'
-                scriptFilename = 'automatedS4script.lua'
+                dataFilename = 'fieldData';
+                scriptFilename = 'automatedS4script.lua';
             end
             makeRunScript(S,GAoptions,grating,incidentFieldParams, dataFilename,scriptFilename,layerChromosomes,materialChromosomes); %Make script
             
             if strcmp(GAoptions.hostname,'Daniel-netbook')
                 system(['C:/Users/daniel/S4-1.1.1-win32/S4 ', GAoptions.dir,scriptFilename]); %Run script
             elseif strcmp(GAoptions.hostname,'berzerk')
-                message = ['running: ', '~/S4/build/S4 ', GAoptions.dir,scriptFilename]
+                message = ['running: ', '~/S4/build/S4 ', GAoptions.dir,scriptFilename];
                 system(['~/S4/build/S4 ', GAoptions.dir,scriptFilename]);
             end
             disp(['importing data: ', GAoptions.dir,dataFilename,'.E'])
@@ -214,9 +214,9 @@ delete([scriptFilename]);
                 ticksX = linspace(0,S.dimensions(1)*(S.cells(1)-1)/S.cells(1), S.cells(1)); %um
                 ticksY = linspace(0,S.dimensions(2)*(S.cells(2)-1)/S.cells(1), S.cells(1));
                 ticksZ = linspace(0,S.dimensions(3)*(S.cells(3)-1)/S.cells(1), S.cells(1));
-                [coorX,coorY,coorZ] = ndgrid(ticksX,ticksY,ticksZ)
+                [coorX,coorY,coorZ] = ndgrid(ticksX,ticksY,ticksZ);
                 
-                eikr_a = zeros(cells(1),cells(2),cells(3),8,8)
+                eikr_a = zeros(S.cells(1),S.cells(2),S.cells(3),8,8);
                 
                 for i_i = 1:7  %For each combination of vectors
                     for i_j = 1:7
@@ -289,11 +289,11 @@ delete([scriptFilename]);
                         blockEnd = stripe.block{1,b}.c2; %right edge of current block
                         if stripe.block{1,b}.pmt_index == 2 %if it's marked as SU8
                             %                       centerX = ((lastX + blockEnd)/2 + lastY/2) * periodX + horiOffset; %scale by periodX because GDC does it relative to periodicity (period=1) %also shift to right as you go up in y
-                            centerX = (lastX + blockEnd)/2 * periodX
-                            widthX = (blockEnd - lastX) * periodX
+                            centerX = (lastX + blockEnd)/2 * periodX;
+                            widthX = (blockEnd - lastX) * periodX;
                             %                       centerY = (stripeEnd + lastY)/2 * periodY + vertOffset;
-                            centerY = (stripeEnd + lastY)/2 * periodY
-                            widthY = (stripeEnd - lastY) * periodY
+                            centerY = (stripeEnd + lastY)/2 * periodY;
+                            widthY = (stripeEnd - lastY) * periodY;
                             setLayerScript = [setLayerScript, sprintf('S:SetLayerPatternRectangle(''Grating'', ''SU8'', {%1.7f,%1.7f}, 0, {%1.7f,%1.7f}) \r\n',centerX,centerY,widthX/2,widthY/2)];
                         
                         end

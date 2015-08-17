@@ -28,7 +28,7 @@ classdef IncidentLightGeneral %< IncidentLightGenerator
             L.n_interference = options.n_interference;
             L.n_incidence = options.n_incidence;
             %k_x = pi/options.period;
-            k_0 = 2*pi/L.wavelength   %um^-1
+            %k_0 = 2*pi/L.wavelength;   %um^-1
 
             %k_y = pi/options.period;
 
@@ -39,16 +39,16 @@ classdef IncidentLightGeneral %< IncidentLightGenerator
                 
                 %Get angle inside the photoresist
                 if strcmp(options.lattice,'square')
-                    phi_interference = atan( sqrt(2)*options.C_over_A )
+                    phi_interference = atan( sqrt(2)*options.C_over_A );
                     L.theta = 45; %polar angle %relative to x-axis of grating
                 elseif strcmp(options.lattice,'hexagonal')
-                    phi_interference = asin( 2*L.wavelength/(3*options.period*L.n_interference) )
+                    phi_interference = asin( 2*L.wavelength/(3*options.period*L.n_interference) );
                     L.theta = 0;
                 end
                 
                 %Do Snells to get angle inside the incident light
                 phi_glass = asin(L.n_interference/L.n_incidence*sin(phi_interference) ); %Gives azimuthal angle in glass substrate
-                L.phi = phi_glass*180/pi %S$ wants angles in degrees
+                L.phi = phi_glass*180/pi; %S$ wants angles in degrees
 
             end
             
@@ -88,7 +88,7 @@ classdef IncidentLightGeneral %< IncidentLightGenerator
             
             
             fieldParameters.Esp = [cos(psi)*cos(chi)-1i*sin(psi)*sin(chi); ...  %Calculate incident Field E-vector
-                sin(psi)*cos(chi)+1i*cos(psi)*sin(chi)] .* sqrt(2*L.Pdens/(L.n_incidence*L.eps_0*L.c) )%/ cos(fieldParameters.phi) ); %Should be units of V/sqrt(unit-area)
+                sin(psi)*cos(chi)+1i*cos(psi)*sin(chi)] .* sqrt(2*L.Pdens/(L.n_incidence*L.eps_0*L.c) ); %/ cos(fieldParameters.phi) ); %Should be units of V/sqrt(unit-area)
             
        end
 
