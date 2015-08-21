@@ -6,7 +6,7 @@ classdef LumericalInterface
         SU8matrix; %boolean, whether to have metal lattice in a matrix
         repeatUnits;
         minMeasWL;
-        maxMeasWL
+        maxMeasWL;
     end
     
     methods
@@ -140,10 +140,18 @@ classdef LumericalInterface
                 
                 
             else
-                %NOT CURRENTLY SUPPORTED
+                dimLum = L.dimensions;
+                dimLum(3) = options.fdtd.shrinkFactor*options.fdtd.repeatUnits*options.dimensions(3);
+                n_SU8 = 1.6;
+                k_SU8 = 0;
+                n_Ag = 0.10858;  %1.33um  Babar and Weaver
+                k_g = 9.6590;    % "
+                outputLumericalFile( structureSU8, dimLum, n_SU8,k_SU8,n_Ag,k_Ag, 1, [options.dir,options.LumNKfile] );
+                
                 sprintf('addimport; \n');
                 sprintf('importnk("%s","%s",%e,%e,%e,%i); \n',[options.dir,options.currentNKfile],...
                     'microns',0,0,0*1e-6,0);
+                
                 %sprintf('for (n=2:%i){ \n',options.Nstructrepeat);
                 %    sprintf('copy(%e,%e,%e); \n',0,0,param.Z_T_shrunk*1e-6);
                 %sprintf('} \n');

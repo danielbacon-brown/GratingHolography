@@ -14,12 +14,13 @@ for i=1:length(GAoptions.S4interfaceOptions.materials)
 end
 
 %Splits chromosome according to each module
-[gratingChromosome ,incidentLightChromosome, offsetChromosome,layerChromosome,materialChromosome ] = splitChromosome(chromosome,[ ...
+[gratingChromosome ,incidentLightChromosome, offsetChromosome,layerChromosome,materialChromosome, fillChromosome ] = splitChromosome(chromosome,[ ...
     GAoptions.gratingFunction.getChromosomeSize(), ...
     GAoptions.incidentLightFunction.getChromosomeSize(),  ...
     GAoptions.offsetConductor.getChromosomeSize(), ...
     chromNlayer ...
     chromNmaterial ...
+    GAoptions.fillHandler.getChromosomeSize() ...
     ]);
 
 %Splits layer chromosome into 1 for each layer
@@ -75,10 +76,58 @@ end
 
 %Do offset of interference pattern
 intensityDist = GAoptions.offsetConductor.doOffset(intensityDist, offsetChromosome); %W/(unitarea)
+%Check for about 0 intensity difference
+if (max(max(max(intensityDist))) - min(min(min(intensityDist))) ) / min(min(min(intensityDist))) < 0.01 %if approx no variation in intensity
+    fitness = 0;
+    return 
+end
 
 
 %Calculate Fitness
-[fitness,threshold] = calcVolumetricMatchEdgeExclusion(GAoptions.targetStructure, GAoptions.exclusionStructure,GAoptions.edgeExclusionStructure, intensityDist,GAoptions.fill);
+if strcmp(GAoptions.fitnessType, 'structure')
+    %Calc structure
+    [exposedStruct,fillfrac,threshold] = GAoptions.fillHandler.applyFill(fillChromosome,intensityDist);
+    
+    if GAoptions.useExclusion == 1
+        %[fitness,threshold] = calcVolumetricMatchEdgeExclusion(GAoptions.targetStructure, GAoptions.exclusionStructure,GAoptions.edgeExclusionStructure, intensityDist,GAoptions.fill);
+        if GAoptions.useEdgeExclusion
+            fitness = calcVolumetricMatchEdgeExclusion(GAoptions.targetStructure, GAoptions.exclusionStructure,GAoptions.edgeExclusionStructure, exposedStruct);
+        else
+            fitness = calcVolumetricMatchExclusion(GAoptions.targetStructure, GAoptions.exclusionStructure, exposedStruct);
+        end
+    else
+       fitness = calcVolumetricMatch(GAoptions.targetStructure, exposedStruct); 
+    end
+    
+elseif strcmp(GAoptions.fitnessType, 'fdtd')
+    
+    %If hexagonal, need to make it repeating hexagonal for it to fit into
+    %Lumerical periodicity.
+    if strcmp(GAoptions.lattice, 'hexagonal')
+        %If hexagonal, convert to cartesian system for plotting and lumerical:
+        intensityDist = hex2cart(intensityDist, GAoptions.cellsCart);
+        
+        %Make hexagonal repeat of structure:
+        lx = size(intensityDist,1);
+        left = intensityDist(1:floor(lx/2),:,:);
+        right = intensityDist((floor(lx/2)+1):end,:,:);
+        top = cat(1,right,left);
+        intensityDist = cat(2,intensityDist,top);
+    end
+    
+    %Calc structure
+    [exposedStruct,fillfrac,threshold] = GAoptions.fillHandler.applyFill(fillChromosome,intensityDist);
+    
+    %Export structure/runfile
+    %writeLumericalRunFileSquare(GAoptions, simStruct);
+    fitness = GAoptions.lumInterfaceFitness.calcCDfitness(exposedStruct);
+    
+    
+    %transmissionRight = LumResults.transmission_right/sqrt(2);
+    %transmissionLeft = LumResults.transmission_left/sqrt(2);
+    %fitness = abs( transmissionRight - transmissionLeft );
+end
+
 %threshold = fixfill(reshape(intensityDist,1,[]),256,GAoptions.fill); %Calculates the threshold value that will yield desired fill fraction
 %fitness = rand();
 
@@ -204,7 +253,7 @@ if exist('doPlots','var') %Plot simulated structure
     acidCount = excitePAG(intensityDist,GAoptions.dimensions,GAoptions.sensSim.sensDens,GAoptions.sensSim.absCrossSection,GAoptions.sensSim.Texposure);
     acidMax = max(max(max(acidCount)))
     acidMin = min(min(min(acidCount)))
-    threshold = fixfill(acidCount,256,GAoptions.fill); %Calculates the threshold value that will yield desired fill fraction
+    threshold = fixfill(acidCount,256,fillfrac); %Calculates the threshold value that will yield desired fill fraction
     figure
     patched = patch(isosurface(padarray(acidCount,[1,1,1],1e20),threshold));
     set(patched,'FaceColor', [255 127 80]/256, 'EdgeColor', 'none');
@@ -226,7 +275,7 @@ if exist('doPlots','var') %Plot simulated structure
         disp(smooth_i)
     end
     crosslinkCount = sum(smoothed,4);
-    crosslinkThreshold = fixfill(crosslinkCount, 256, GAoptions.fill)
+    crosslinkThreshold = fixfill(crosslinkCount, 256, fillfrac)
     figure
     patched = patch(isosurface(padarray(crosslinkCount,[1,1,1],1e20),crosslinkThreshold));
     set(patched,'FaceColor', [255 127 80]/256, 'EdgeColor', 'none');

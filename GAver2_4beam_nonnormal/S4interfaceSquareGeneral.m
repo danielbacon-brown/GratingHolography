@@ -152,7 +152,8 @@ classdef S4interfaceSquareGeneral
                 intensityDist = [];
                 return;
             end
-            A = importdata([GAoptions.dir,dataFilename,'.E']); %Load data from script
+            %A = importdata([GAoptions.dir,dataFilename,'.E']); %Load data from script
+            A = dlmread([GAoptions.dir,dataFilename,'.E']); %Load data from script
             delete([GAoptions.dir,dataFilename,'.E']); %Clear data file for reuse
             delete([GAoptions.dir,dataFilename,'.H']);
             delete([scriptFilename]);

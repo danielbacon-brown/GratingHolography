@@ -9,38 +9,19 @@ function runGA_8beamVarLayer
 [idum,hostname] = system('hostname')
 GAoptions.hostname = strtrim(hostname);
 
-%%%%% Genetic Algorithm Options %%%%%
-    GAoptions.popSize = 1000;
-    GAoptions.numGen = 10;
+
+    %%%%% Genetic Algorithm Options %%%%%
+    GAoptions.popSize = 6;
+    GAoptions.numGen = 1;
     GAoptions.elite = 1;
     GAoptions.numRepetitions = 1; %Number of times to repeat the GA
-    %Options for built-in GA algorithm:
-    if strcmp(strtrim(hostname),'lotus-bud')
-        UseParallelVar = true;
-    elseif strcmp(strtrim(hostname),'berzerk')
-        UseParallelVar = 'always'
-    elseif strcmp(strtrim(hostname),'Daniel-netbook')
-        UseParallelVar = 'never';
-    end
-    GAoptions.optimset = gaoptimset('PopulationSize', GAoptions.popSize,...
-        'PopulationType', 'bitstring',...
-        'EliteCount', GAoptions.elite,...
-        'CrossoverFraction', 0.95,...
-        'CrossoverFcn', @crossoverscattered,...
-        'Generations', GAoptions.numGen,...
-        'SelectionFcn', @selectionroulette,...
-        'TolFun', 0,...
-        ... %'MutationFcn', @mutationfcn,...  use default gaussian mutation distribution
-        'FitnessScalingFcn', @fitscalingshiftlinear,...
-        'StallTimeLimit', 120*3600, ... %five days
-        'Display', 'diagnose', ...
-        'PlotFcns',@gaplotbestf, ...
-        'UseParallel',UseParallelVar, ...  
-        'StallGenLimit', 20);
-    %Get and record random number generator
-    GAoptions.randomStream = RandStream('mt19937ar','Seed','shuffle');
-    RandStream.setGlobalStream(GAoptions.randomStream);
     
+    
+    %%%%% FITNESS TYPE %%%%%
+    GAoptions.fitnessType = 'structure';
+    %GAoptions.fitnessType = 'fdtd';
+    GAoptions.useExclusion = 1; %for 'structure'
+    GAoptions.useEdgeExclusion = 1; %for 'structure'
     
     
     %%%%% Filenames %%%%%
@@ -53,9 +34,7 @@ GAoptions.hostname = strtrim(hostname);
     end
     mkdir(GAoptions.dir);%Create folder if it doesn't exist yet
     GAoptions.GARecordFileBase = 'GAResults';  %Stores results
-    GAoptions.currentLumSave = 'LumSave.fsp';
-    GAoptions.LumRunScript = 'LumRun.lsf';
-    GAoptions.currentLumResultsFile = 'LumResults'
+
     
     
 
@@ -86,19 +65,19 @@ GAoptions.hostname = strtrim(hostname);
     %%%%% Layers: %%%%%    
     chromNlayer = 8;
     
-%     %Prism-coupled, glass->ITO->SU8->grating->vacuum
-%     S4interfaceOptions.layers(1) = Layer('Front','Glass',0);
-%     S4interfaceOptions.layers(2) = Layer('TCO','ITO',-1,0.015,0.15,chromNlayer);
-%     S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
-%     S4interfaceOptions.layers(4) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer); 
-%     S4interfaceOptions.layers(5) = Layer('Back','Vacuum', 0);
-
-    %Incident on PDMS.  PDMS->grating->SU8->Glass
-    S4interfaceOptions.layers(1) = Layer('Front','PDMS',0);
-    S4interfaceOptions.layers(2) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer);
+    %Prism-coupled, glass->ITO->SU8->grating->vacuum
+    S4interfaceOptions.layers(1) = Layer('Front','Glass',0);
+    S4interfaceOptions.layers(2) = Layer('TCO','ITO',-1,0.015,0.15,chromNlayer);
     S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
-    S4interfaceOptions.layers(4) = Layer('TCO','ITO',-1,0.015,0.15,chromNlayer);
-    S4interfaceOptions.layers(5) = Layer('Back','Glass', 0);
+    S4interfaceOptions.layers(4) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer); 
+    S4interfaceOptions.layers(5) = Layer('Back','Vacuum', 0);
+
+%     %Incident on PDMS.  PDMS->grating->SU8->Glass
+%     S4interfaceOptions.layers(1) = Layer('Front','PDMS',0);
+%     S4interfaceOptions.layers(2) = Layer('Grating','Vacuum', -1, 0,0.2,chromNlayer);
+%     S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
+%     S4interfaceOptions.layers(4) = Layer('TCO','ITO',-1,0.015,0.15,chromNlayer);
+%     S4interfaceOptions.layers(5) = Layer('Back','Glass', 0);
     
     
 %     %Incident on air.  Air->grating->SU8->ITO->Glass
@@ -107,18 +86,6 @@ GAoptions.hostname = strtrim(hostname);
 %     S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
 %     S4interfaceOptions.layers(4) = Layer('TCO','ITO',-1,0.015,0.15,chromNlayer);
 %     S4interfaceOptions.layers(5) = Layer('Back','Glass', 0);
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
@@ -257,7 +224,7 @@ GAoptions.hostname = strtrim(hostname);
     end
     exclusionfill = 1 - sum(sum(sum(GAoptions.exclusionStructure))) / (size(GAoptions.exclusionStructure,1)*size(GAoptions.exclusionStructure,1)*size(GAoptions.exclusionStructure,3));
     
-    GAoptions.fill = (3*targetfill+exclusionfill)/4;  %Matches interference pattern fill to average of the target and exclusion structures. Consider adding fill factor to chromosome
+    %GAoptions.fill = (3*targetfill+exclusionfill)/4;  %Matches interference pattern fill to average of the target and exclusion structures. Consider adding fill factor to chromosome
 
     %1 at the edges of the unit cell to reduce fitness of x-y continuous structures
     edgeExclusionStructure = zeros(GAoptions.cells);
@@ -266,6 +233,21 @@ GAoptions.hostname = strtrim(hostname);
     edgeExclusionStructure(:,1,:) = 1;
     edgeExclusionStructure(:,end,:) = 1;
     GAoptions.edgeExclusionStructure = edgeExclusionStructure;
+    
+    
+    
+    %%%%% FILL %%%%%
+    fillOptions.constFill = -1;
+    fillOptions.fillMax = 0.95;
+    fillOptions.fillMin = 0.75;
+    fillOptions.chromNfill = 8;
+    GAoptions.fill = fillOptions;
+    GAoptions.fillHandler = FillFactorHandler(fillOptions)
+    
+    
+    
+    
+    
     
  
     %%%%% Offset %%%%%
@@ -279,7 +261,7 @@ GAoptions.hostname = strtrim(hostname);
     
     
     %%%% Calc Fitness %%%%%
-    GAoptions.calcFitness = @calcVolumetricMatchExclusion;
+    %GAoptions.calcFitness = @calcVolumetricMatchExclusion;
     
 
 
@@ -301,7 +283,7 @@ GAoptions.hostname = strtrim(hostname);
     fdtd.simulationTime = 500; %fs
     fdtd.shrinkFactor = 0.9; %Thickness after development / thickness during interference
     fdtd.repeatUnits = 3; %Number of unit cells to do FDTD simulation
-    fdtd.meshAccuracy = 1;
+    fdtd.meshAccuracy = 3;
     fdtd.minSourceWL = 0.5e-6; %m
     fdtd.maxSourceWL = 4e-6;  %m
     fdtd.minMeasWL = 0.5e-6; %m
@@ -309,8 +291,41 @@ GAoptions.hostname = strtrim(hostname);
     fdtd.numMeasWL = 500;
     fdtd.addCubesDirectly = 1;
     fdtd.SU8matrix = 1;
+    fdtd.measureReflection = 1;
     GAoptions.fdtd = fdtd;
     
+    
+    if strcmp(GAoptions.fitnessType, 'fdtd')
+        %%%%% Do FDTD as a test %%%%%
+        fdtdfitness.dir = GAoptions.dir;
+        fdtdfitness.dimensions = GAoptions.dimensions;
+        fdtdfitness.cells = GAoptions.cells;
+        fdtdfitness.lattice = GAoptions.lattice;
+        fdtdfitness.baseLumSave = 'baseLum.fsp'; %base Lumerical file with common objects
+        fdtdfitness.baseScriptFile = 'baseScript.lsf'; %Sets up the base file
+        fdtdfitness.modLumSave = 'LumSave.fsp';  %File containing setup+structure
+        fdtdfitness.runScriptFile = 'LumRun.lsf';  %Executed each sim
+        fdtdfitness.resultsFile = 'LumResults';  %Location of output by Lumerical
+        fdtdfitness.NKfile = 'LumNK.txt'  %Location of n,k structure file
+        fdtdfitness.simulationTime = 250; %fs
+        fdtdfitness.shrinkFactor = 0.9; %Thickness after development / thickness during interference
+        fdtdfitness.repeatUnits = 3; %Number of unit cells to do FDTD simulation
+        fdtdfitness.meshAccuracy = 1;
+        fdtdfitness.minSourceWL = 0.7e-6; %m
+        fdtdfitness.maxSourceWL = 2e-6;  %m
+        fdtdfitness.minMeasWL = 0.7e-6; %m
+        fdtdfitness.maxMeasWL = 2e-6;  %m
+        fdtdfitness.numMeasWL = 100;
+        fdtdfitness.addCubesDirectly = 0;
+        fdtdfitness.SU8matrix = 1;
+        fdtdfitness.measureReflection = 0;
+        fdtdfitness.n_exposed = 1.6;    %for n,k fdtdstructure
+        fdtdfitness.k_exposed = 0;
+        fdtdfitness.n_inverted = 0.10858;  %Ag @ 1.33um  Babar and Weaver
+        fdtdfitness.k_inverted = 9.6590;    % "
+        GAoptions.lumInterfaceFitness = LumericalInterfaceFitness(fdtdfitness);
+        GAoptions.fdtdfitness = fdtdfitness;
+    end
     
     %%%%% Do sensitizer simulation %%%%%
     sensSim.sensDens = 8290000 *4; %Density of sensitizer molecules per um^3
@@ -318,6 +333,40 @@ GAoptions.hostname = strtrim(hostname);
     sensSim.absCrossSection = 2.91e-7; %nm^2/molecule %BCPI  %MAY NEED TO UPDATE
     sensSim.Texposure = 200; %s
     GAoptions.sensSim = sensSim;
+    
+    
+    
+    
+    %Options for built-in GA algorithm:
+    if strcmp(strtrim(hostname),'lotus-bud')
+        UseParallelVar = true;
+    elseif strcmp(strtrim(hostname),'berzerk')
+        if strcmp(GAoptions.fitnessType, 'fdtd')
+            UseParallelVar = 'never'
+        else
+            UseParallelVar = 'always'
+        end
+    elseif strcmp(strtrim(hostname),'Daniel-netbook')
+        UseParallelVar = 'never';
+    end
+    GAoptions.optimset = gaoptimset('PopulationSize', GAoptions.popSize,...
+        'PopulationType', 'bitstring',...
+        'EliteCount', GAoptions.elite,...
+        'CrossoverFraction', 0.95,...
+        'CrossoverFcn', @crossoverscattered,...
+        'Generations', GAoptions.numGen,...
+        'SelectionFcn', @selectionroulette,...
+        'TolFun', 0,...
+        ... %'MutationFcn', @mutationfcn,...  use default gaussian mutation distribution
+        'FitnessScalingFcn', @fitscalingshiftlinear,...
+        'StallTimeLimit', 120*3600, ... %five days
+        'Display', 'diagnose', ...
+        'PlotFcns',@gaplotbestf, ...
+        'UseParallel',UseParallelVar, ...  
+        'StallGenLimit', 20);
+    %Get and record random number generator
+    GAoptions.randomStream = RandStream('mt19937ar','Seed','shuffle');
+    RandStream.setGlobalStream(GAoptions.randomStream);
     
     
     
@@ -339,6 +388,7 @@ GAoptions.hostname = strtrim(hostname);
         + GAoptions.offsetConductor.getChromosomeSize() ...
         + chromNlayer ...
         + chromNmaterial ...
+        + GAoptions.fillHandler.getChromosomeSize() ...
         ;
     GAoptions.GAproblem.fitnessfcn = @gfit;  %fitness function
     GAoptions.GAproblem.Aineq = [];  %A matrix for linear inequality constraints
