@@ -62,7 +62,7 @@ GAoptions.hostname = strtrim(hostname);
     %%%%%% Lattice Dimensions %%%%%
     GAoptions.normalIncidence = 0; 
     GAoptions.laserWavelength = 0.532; %um
-    GAoptions.C_over_A = 1.5;    %Max C/A for air gap is 0.578 %for PDMS prism, max C/A = 1.396 %Will be overwritten if normal incidence
+    GAoptions.C_over_A = 1;    %Max C/A for air gap is 0.578 %for PDMS prism, max C/A = 1.396 %Will be overwritten if normal incidence
     GAoptions.lattice = 'square';
     %GAoptions.lattice = 'hexagonal';
     GAoptions.n_PR = 1.58; %refractive index of the photoresist (SU8)
