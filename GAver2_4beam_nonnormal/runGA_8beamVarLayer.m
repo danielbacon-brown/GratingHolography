@@ -60,17 +60,27 @@ GAoptions.hostname = strtrim(hostname);
     S4interfaceOptions.materials(3) = Material('ITO',1.94+0.046i);
     S4interfaceOptions.materials(4) = Material('SU8',GAoptions.n_PR);
     S4interfaceOptions.materials(5) = Material('PDMS',GAoptions.n_PDMS);
+    S4interfaceOptions.materials(6) = Material('Graphene',2.6793+1.2227i);  %For single layer
             
     
     %%%%% Layers: %%%%%    
     chromNlayer = 8;
     
-    %Prism-coupled, glass->ITO->SU8->grating->vacuum
+%     %Prism-coupled, glass->ITO->SU8->grating->vacuum
+%     S4interfaceOptions.layers(1) = Layer('Front','Glass',0);
+%     S4interfaceOptions.layers(2) = Layer('TCO','ITO',-1,0.015,0.15,chromNlayer);
+%     S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
+%     S4interfaceOptions.layers(4) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer); 
+%     S4interfaceOptions.layers(5) = Layer('Back','Vacuum', 0);
+    
+    %Prism-coupled, glass->graphene->SU8->grating->vacuum
     S4interfaceOptions.layers(1) = Layer('Front','Glass',0);
-    S4interfaceOptions.layers(2) = Layer('TCO','ITO',-1,0.015,0.15,chromNlayer);
+    S4interfaceOptions.layers(2) = Layer('Graphene','Graphene',0.00034);  %Single layer
     S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
     S4interfaceOptions.layers(4) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer); 
     S4interfaceOptions.layers(5) = Layer('Back','Vacuum', 0);
+    
+    
 
 %     %Incident on PDMS.  PDMS->grating->SU8->Glass
 %     S4interfaceOptions.layers(1) = Layer('Front','PDMS',0);
@@ -368,6 +378,8 @@ GAoptions.hostname = strtrim(hostname);
     GAoptions.randomStream = RandStream('mt19937ar','Seed','shuffle');
     RandStream.setGlobalStream(GAoptions.randomStream);
     
+    %Tells whether or not to do output of data/files etc.
+    GAoptions.runSingle = 0;
     
     
     %Get layer chromosome length
@@ -410,8 +422,8 @@ toc
 
 
 % %DO BEST CHROMOSOME:
-doPlots=1;
-fitness = fitnessFunction_8beamVarLayers(GAoptions,chromosome,doPlots) %Should also work for reflections
+GAoptions.runSingle = 1;
+fitness = fitnessFunction_8beamVarLayers(GAoptions,chromosome) %Should also work for reflections
 
 
 

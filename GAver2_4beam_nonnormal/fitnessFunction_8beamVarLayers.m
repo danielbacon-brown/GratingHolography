@@ -1,4 +1,4 @@
-function fitness = fitnessFunction_8beamVarLayers(GAoptions,chromosome,doPlots)
+function fitness = fitnessFunction_8beamVarLayers(GAoptions,chromosome)
 %Designed to be a fairly general fitness function
 %Use in a separate file allows the chromosome to be measured directly
 
@@ -51,7 +51,7 @@ end
 %Generate Grating
 grating = GAoptions.gratingFunction.generateGrating(gratingChromosome);
 
-if exist('doPlots','var')
+if GAoptions.runSingle == 1
     GAoptions.gratingFunction.plotGrating(grating);  %plot grating
 end
 
@@ -60,7 +60,7 @@ end
 %Incident Field
 incidentFieldParams = GAoptions.incidentLightFunction.generateField(incidentLightChromosome);
 
-if exist('doPlots','var')
+if GAoptions.runSingle == 1
    GAoptions.incidentLightFunction.plotPolarizationEsp(incidentFieldParams.Esp); 
 end
 
@@ -133,7 +133,7 @@ end
 
 
 
-if exist('doPlots','var') %Plot simulated structure
+if GAoptions.runSingle == 1 %Plot simulated structure
     figure
     patched = patch(isosurface(padarray(intensityDist,[1,1,1],1e20),threshold));
     set(patched,'FaceColor', [30 255 30]/256, 'EdgeColor', 'none');
