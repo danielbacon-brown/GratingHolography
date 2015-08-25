@@ -85,6 +85,7 @@ end
 
 %Calculate Fitness
 if strcmp(GAoptions.fitnessType, 'structure')
+    
     %Calc structure
     [exposedStruct,fillfrac,threshold] = GAoptions.fillHandler.applyFill(fillChromosome,intensityDist);
     
