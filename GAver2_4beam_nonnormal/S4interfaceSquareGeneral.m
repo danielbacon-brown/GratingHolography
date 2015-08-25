@@ -152,11 +152,20 @@ classdef S4interfaceSquareGeneral
                 intensityDist = [];
                 return;
             end
-            A = importdata([GAoptions.dir,dataFilename,'.E']); %Load data from script
+            %A = importdata([GAoptions.dir,dataFilename,'.E']); %Load data from script
+            A = dlmread([GAoptions.dir,dataFilename,'.E']); %Load data from script
             delete([GAoptions.dir,dataFilename,'.E']); %Clear data file for reuse
             delete([GAoptions.dir,dataFilename,'.H']);
-            delete([scriptFilename]);
+            if GAoptions.runSingle == 0
+                delete([scriptFilename]);
+            else
+                disp(['Saving: ', scriptFilename])
+            end
             
+            if size(A,2)<9 %If data is full of NaN, skip it and move on
+                intensityDist = [];
+                return;
+            end
             
             Ex = A(:,4) + 1i*A(:,5);
             Ey = A(:,6) + 1i*A(:,7);
@@ -206,7 +215,10 @@ classdef S4interfaceSquareGeneral
             delete([GAoptions.dir,dataFilename,'.H']);
 delete([scriptFilename]);
             
-            
+            if size(A,2)<9 %If data is full of NaN, skip it and move on
+                intensityDist = [];
+                return;
+            end
 
 %FINISH
             if strcmp(GAoptions.lattice,'square')
