@@ -10,7 +10,7 @@ function runGA_8beamVarLayer
 GAoptions.hostname = strtrim(hostname);
 
 %%%%% Genetic Algorithm Options %%%%%
-    GAoptions.popSize = 1000;
+    GAoptions.popSize = 20000;
     GAoptions.numGen = 10;
     GAoptions.elite = 1;
     GAoptions.numRepetitions = 1; %Number of times to repeat the GA
@@ -60,16 +60,16 @@ GAoptions.hostname = strtrim(hostname);
     
 
     %%%%%% Lattice Dimensions %%%%%
-    GAoptions.normalIncidence = 1; 
+    GAoptions.normalIncidence = 0; 
     GAoptions.laserWavelength = 0.532; %um
-    GAoptions.C_over_A = 1;    %Max C/A for air gap is 0.578 %for PDMS prism, max C/A = 1.396 %Will be overwritten if normal incidence
+    GAoptions.C_over_A = 1.5;    %Max C/A for air gap is 0.578 %for PDMS prism, max C/A = 1.396 %Will be overwritten if normal incidence
     GAoptions.lattice = 'square';
     %GAoptions.lattice = 'hexagonal';
     GAoptions.n_PR = 1.58; %refractive index of the photoresist (SU8)
     GAoptions.n_PDMS = 1.43; 
     GAoptions.n_gratingVoid = 1; %assuming vacuum-SU8 grating
-    GAoptions.n_glassSubstrate = 1.45;   %Glass slide as substrate
-    GAoptions.n_front = GAoptions.n_PDMS; %GAoptions.n_PDMS;  %refractive index for incident light
+    GAoptions.n_glassSubstrate = 1.505;   %Glass slide as substrate
+    GAoptions.n_front = GAoptions.n_glassSubstrate; %GAoptions.n_PDMS;  %refractive index for incident light
 
 
 
@@ -86,7 +86,11 @@ GAoptions.hostname = strtrim(hostname);
     %%%%% Layers: %%%%%    
     chromNlayer = 8;
     
-%     %Prism-coupled, glass->ITO->SU8->grating->vacuum
+%     %Prism-coupled, glass->ITO->SU8->grating->vacuum    %If the 'pause' file is found, shift control to keyboard, pausing the
+    %simulation.  Useful if someone else needs to use Lumerical.
+    if exist('/home/danielbacon-brown/pause','dir') == 7
+        keyboard;
+    end
 %     S4interfaceOptions.layers(1) = Layer('Front','Glass',0);
 %     S4interfaceOptions.layers(2) = Layer('TCO','ITO',-1,0.015,0.15,chromNlayer);
 %     S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
@@ -370,6 +374,18 @@ fitness = fitnessFunction_8beamVarLayers(GAoptions,chromosome,doPlots) %Should a
         
 %%%%% Declaration of Fitness Function %%%%%
     function fitness = gfit(chromosome)  %This is done so that it can pass GAoptions to the fitness function.
+        
+        
+        
+%         %If the 'pause' file is found, shift control to keyboard, pausing the
+%         %simulation.  Useful if someone else needs to use Lumerical.
+%         if (strcmp(strtrim(hostname),'berzerk') && exist('/home/daniel/pause','dir') == 7 ) || ...
+%            (strcmp(strtrim(hostname),'lotus-bud') && exist('/home/danielbacon-brown/pause','dir') == 7 ) || ...
+%            (strcmp(strtrim(hostname),'Daniel-netbook') && exist('c:/Users/daniel/pause','dir') == 7 )
+%             
+%             keyboard;
+%         end
+        
         %tic
         fitness = fitnessFunction_8beamVarLayers(GAoptions,chromosome);
         %toc 
