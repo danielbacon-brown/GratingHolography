@@ -61,6 +61,7 @@ GAoptions.hostname = strtrim(hostname);
     S4interfaceOptions.materials(4) = Material('SU8',GAoptions.n_PR);
     S4interfaceOptions.materials(5) = Material('PDMS',GAoptions.n_PDMS);
     S4interfaceOptions.materials(6) = Material('Graphene',2.6793+1.2227i);  %For single layer
+    
             
     
     %%%%% Layers: %%%%%    
