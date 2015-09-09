@@ -11,7 +11,7 @@ GAoptions.hostname = strtrim(hostname);
 
 
     %%%%% Genetic Algorithm Options %%%%%
-    GAoptions.popSize = 5000;
+    GAoptions.popSize = 1000;
     GAoptions.numGen = 10;
     GAoptions.elite = 3;
     GAoptions.numRepetitions = 1; %Number of times to repeat the GA
@@ -20,11 +20,14 @@ GAoptions.hostname = strtrim(hostname);
     %%%%% FITNESS TYPE %%%%%
     GAoptions.fitnessType = 'structure';
     %GAoptions.fitnessType = 'fdtd';
-    GAoptions.useExclusion = 1; %for 'structure'
-    GAoptions.useEdgeExclusion = 1; %for 'structure'
+    GAoptions.useExclusion = 0; %for 'structure'
+    GAoptions.useEdgeExclusion = 0; %for 'structure'
     
     
     %%%%% Filenames %%%%%
+    GAoptions.LumRunScript = 'LumRunScript.lsf'; %Runs for single
+    GAoptions.currentLumSave = 'currentLumSave.lsf';
+    GAoptions.currentLumResultsFile = 'currentLumResultsFile.mat';
     if strcmp(strtrim(hostname),'lotus-bud')
         GAoptions.dir = ['/home/daniel/GA_8beamReflect_helix_data/','GA_',datestr(now,'mm-dd-yy_HH:MM'),'_N',int2str(GAoptions.popSize), '/']  %directory that all this goes into
     elseif strcmp(strtrim(hostname),'berzerk')
@@ -39,16 +42,16 @@ GAoptions.hostname = strtrim(hostname);
     
 
     %%%%%% Lattice Dimensions %%%%%
-    GAoptions.normalIncidence = 1; 
+    GAoptions.normalIncidence = 0; 
     GAoptions.laserWavelength = 0.532; %um
     GAoptions.C_over_A = 1;    %Max C/A for air gap is 0.578 %for PDMS prism, max C/A = 1.396 %Will be overwritten if normal incidence
-    GAoptions.lattice = 'square';
-    %GAoptions.lattice = 'hexagonal';
+    %GAoptions.lattice = 'square';
+    GAoptions.lattice = 'hexagonal';
     GAoptions.n_PR = 1.58; %refractive index of the photoresist (SU8)
     GAoptions.n_PDMS = 1.43; 
     GAoptions.n_gratingVoid = 1; %assuming vacuum-SU8 grating
-    GAoptions.n_glassSubstrate = 1.45;   %Glass slide as substrate
-    GAoptions.n_front = GAoptions.n_PDMS; %GAoptions.n_PDMS;  %refractive index for incident light
+    GAoptions.n_glassSubstrate = 1.48;   %Glass slide as substrate
+    GAoptions.n_front = GAoptions.n_glassSubstrate; %GAoptions.n_PDMS;  %refractive index for incident light
 
 
 
@@ -74,16 +77,30 @@ GAoptions.hostname = strtrim(hostname);
 %     S4interfaceOptions.layers(4) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer); 
 %     S4interfaceOptions.layers(5) = Layer('Back','Vacuum', 0);
     
-    %Prism-coupled, glass->graphene->SU8->grating->vacuum
+    %Prism-coupled, glass->SU8->grating->vacuum    --requires some
+    %electroless deposition
     S4interfaceOptions.layers(1) = Layer('Front','Glass',0);
-    S4interfaceOptions.layers(2) = Layer('Graphene','Graphene',0.00034);  %Single layer
-    S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
-    S4interfaceOptions.layers(4) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer); 
-    S4interfaceOptions.layers(5) = Layer('Back','Vacuum', 0);
+    S4interfaceOptions.layers(2) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
+    S4interfaceOptions.layers(3) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer); 
+    S4interfaceOptions.layers(4) = Layer('Back','Vacuum', 0);
+    
+%     %Prism-coupled, glass->graphene->SU8->grating->vacuum
+%     S4interfaceOptions.layers(1) = Layer('Front','Glass',0);
+%     S4interfaceOptions.layers(2) = Layer('Graphene','Graphene',0.00034);  %Single layer
+%     S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
+%     S4interfaceOptions.layers(4) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer); 
+%     S4interfaceOptions.layers(5) = Layer('Back','Vacuum', 0);
+    
+%     %Incident on air.  Air->grating->SU8->graphene->Glass
+%     S4interfaceOptions.layers(1) = Layer('Front','Vacuum',0);
+%     S4interfaceOptions.layers(2) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer);
+%     S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
+%     S4interfaceOptions.layers(4) = Layer('Graphene','Graphene',0.0034);
+%     S4interfaceOptions.layers(5) = Layer('Back','Glass', 0);
     
     
 
-%     %Incident on PDMS.  PDMS->grating->SU8->Glass
+%     %Incident on PDMS.  PDMS->grating->SU8->ITO->Glass
 %     S4interfaceOptions.layers(1) = Layer('Front','PDMS',0);
 %     S4interfaceOptions.layers(2) = Layer('Grating','Vacuum', -1, 0,0.2,chromNlayer);
 %     S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
@@ -98,8 +115,12 @@ GAoptions.hostname = strtrim(hostname);
 %     S4interfaceOptions.layers(4) = Layer('TCO','ITO',-1,0.015,0.15,chromNlayer);
 %     S4interfaceOptions.layers(5) = Layer('Back','Glass', 0);
     
-    
-    
+%     %Incident on air.  No TCO.  Air->grating->SU8->Glass
+%     S4interfaceOptions.layers(1) = Layer('Front','Vacuum',0);
+%     S4interfaceOptions.layers(2) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer);
+%     S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
+%     S4interfaceOptions.layers(4) = Layer('Back','Glass', 0);
+    %013
     
     
     
@@ -126,7 +147,7 @@ GAoptions.hostname = strtrim(hostname);
     end
     
     %Cell # and dimensions
-    GAoptions.repeatingUnits = 1;  %Used as a test for periodicity, should be 1 for actual optimization
+    GAoptions.repeatingUnits = 1;  %Used as a test for periodicity, should be 1 for actual optimization (except for fdtd test)
     GAoptions.cells = floor(25*[1,1,GAoptions.C_over_A*GAoptions.repeatingUnits]); %number of 'ticks' in each dimension
     if strcmp(GAoptions.lattice, 'square')
         GAoptions.dimensions = [GAoptions.period, GAoptions.period, GAoptions.period*GAoptions.C_over_A]; %dimensions of unit cell
@@ -168,8 +189,8 @@ GAoptions.hostname = strtrim(hostname);
     GAoptions.incidentLightFunction = IncidentLightGeneral(incidentLightOptions);
 
 %For  GratingGrid
-    gratingOptions.NblockX = 3;
-    gratingOptions.NblockY = 3;
+    gratingOptions.NblockX = 4;
+    gratingOptions.NblockY = 4;
     gratingOptions.chromNspacingX = 8;
     gratingOptions.chromNspacingY = 8;
     gratingOptions.chromNSU8thickness = 8; 
@@ -205,8 +226,8 @@ GAoptions.hostname = strtrim(hostname);
     targetStructureOptions.u = GAoptions.u;
     targetStructureOptions.v = GAoptions.v;
     targetStructureOptions.w = GAoptions.w;
-    targetStructureOptions.radb = GAoptions.period/3; %radius / distance of middle of helix to axis (um)
-    targetStructureOptions.radl = GAoptions.period/8; %radius of the wire (um)
+    targetStructureOptions.radb = GAoptions.period/5; %radius / distance of middle of helix to axis (um)
+    targetStructureOptions.radl = GAoptions.period/6; %radius of the wire (um)
     targetStructureOptions.relativeZ = GAoptions.C_over_A; %ratio of height to width of ellipsoidal 'pen'
     GAoptions.targetStructureOptions = targetStructureOptions;
     if strcmp(targetStructureOptions.structureType, 'doublehelix')
@@ -222,8 +243,8 @@ GAoptions.hostname = strtrim(hostname);
     exclusionStructureOptions.u = GAoptions.u;
     exclusionStructureOptions.v = GAoptions.v;
     exclusionStructureOptions.w = GAoptions.w;
-    exclusionStructureOptions.radb = GAoptions.period/3;
-    exclusionStructureOptions.radl = GAoptions.period/4;
+    exclusionStructureOptions.radb = GAoptions.period/5;
+    exclusionStructureOptions.radl = GAoptions.period/5;
     exclusionStructureOptions.relativeZ = GAoptions.C_over_A;  %ratio of height to width of ellipsoidal 'pen'
     GAoptions.exclusionStructureOptions = exclusionStructureOptions;
     %GAoptions.exclusionStructure = generateDoubleHelixStructureParallelogram(exclusionStructureOptions)  %Create double helix
@@ -249,8 +270,8 @@ GAoptions.hostname = strtrim(hostname);
     
     %%%%% FILL %%%%%
     fillOptions.constFill = -1;
-    fillOptions.fillMax = 0.95;
-    fillOptions.fillMin = 0.75;
+    fillOptions.fillMax = 0.85;
+    fillOptions.fillMin = 0.8;
     fillOptions.chromNfill = 8;
     GAoptions.fill = fillOptions;
     GAoptions.fillHandler = FillFactorHandler(fillOptions)
