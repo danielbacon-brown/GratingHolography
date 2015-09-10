@@ -1,4 +1,4 @@
-function [fitness,threshold] = calcVolumetricMatchEdgeExclusion(targetStructure,exclusionStructure,edgeExclusionStructure, exposedStruct)
+function [fitness,threshold] = calcVolumetricMatch(targetStructure, exposedStruct)
 %Calculates the amount of overlap between the target structure and
 %simulated structure
 %Note: target structure and simulated structure are inverted: 1=void, 0=SU8
@@ -12,7 +12,6 @@ function [fitness,threshold] = calcVolumetricMatchEdgeExclusion(targetStructure,
 
 %nbins = 256; %number of bins for intensity histogram
 
-%Need fill of target structure to normalize
 fill = 1 - sum(sum(sum(targetStructure))) / (size(targetStructure,1)*size(targetStructure,1)*size(targetStructure,3)); %gives fill fraction of SU8 of target
 %threshold = fixfill(reshape(intensityDist,1,[]),nbins,fill); %Calculates the threshold value that will yield desired fill fraction
 
@@ -21,15 +20,12 @@ simStruct = ~exposedStruct;
 
 %f_void = sum(sum(sum( targetStructure & simStruct )))/(size(targetStructure,1)*size(targetStructure,1)*size(targetStructure,3))/fill; %Fraction of points that are contained by both
 %f_filled = sum(sum(sum( ~targetStructure & ~simStruct )))/(size(targetStructure,1)*size(targetStructure,1)*size(targetStructure,3))/fill; %Fraction of poitns contained by neither
-%Add -1 of 1@1 for target structure ( 1 = in helix)  %Negative fitness is good
+%Add fill@fill for target structure
 f1 = -1*sum(sum(sum( targetStructure & simStruct )))/(size(targetStructure,1)*size(targetStructure,1)*size(targetStructure,3))/fill; %Fraction of poitns contained by neither
-%Add 0@1 for exclusion structure (1 = in helix)  %If there are points outside the big helix, add to the fitness (bad)
-f2 = sum(sum(sum( ~exclusionStructure & simStruct )))/(size(targetStructure,1)*size(targetStructure,1)*size(targetStructure,3))/fill; %Fraction of poitns contained by neither
-%Add -1 of 1@1 (1 is at edge) %If there are points at the edge, add to the
-%fitness % normalized to ~total number of edge points
-f3 = sum(sum(sum( edgeExclusionStructure & simStruct )))/(size(targetStructure,1)*size(targetStructure,3)*2+size(targetStructure,2)*size(targetStructure,3)*2);
+%Add fill@void for exclusion structure
+%f2 = sum(sum(sum( ~exclusionStructure & simStruct )))/(size(targetStructure,1)*size(targetStructure,1)*size(targetStructure,3))/fill; %Fraction of poitns contained by neither
 
-fitness = f1*6 + f2 + f3;
+fitness = f1;
 
 % %TEST
 % figure

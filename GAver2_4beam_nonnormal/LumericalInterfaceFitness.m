@@ -227,7 +227,9 @@ classdef LumericalInterfaceFitness
             Nz = size(exposedStruct,3);
             
             %Create repeat structure in z
-            exposedStructRep = repmat(exposedStruct,[1,1,L.options.repeatUnits]);
+            %exposedStructRep =
+            %repmat(exposedStruct,[1,1,L.options.repeatUnits]);  %Actually
+            %does a repeating structure as a part of S4 
             
             fprintf(setupout,'redrawoff; \n');
             
@@ -302,7 +304,7 @@ classdef LumericalInterfaceFitness
             
             
             %Load base file and run sim
-            system(sprintf('fdtd-solutions %s -run %s', [L.options.dir, L.options.baseLumSave] ,  [L.options.dir, L.options.runScriptFile] ) );
+            system(sprintf('fdtd-solutions %s -nw -run %s', [L.options.dir, L.options.baseLumSave] ,  [L.options.dir, L.options.runScriptFile] ) );
             %Import results
             while(~exist([L.options.dir,L.options.resultsFile,'.mat'],'file'))
                 pause(0.1)

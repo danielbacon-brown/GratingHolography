@@ -106,18 +106,67 @@ elseif strcmp(GAoptions.fitnessType, 'fdtd')
     %Lumerical periodicity.
     if strcmp(GAoptions.lattice, 'hexagonal')
         %If hexagonal, convert to cartesian system for plotting and lumerical:
-        intensityDist = hex2cart(intensityDist, GAoptions.cellsCart);
+        intensityDistInt = hex2cart(intensityDist, GAoptions.cellsCart);
         
+%         
+%         %TEST OF HEX 2 CART
+%         [exposedStruct,fillfrac,threshold] = GAoptions.fillHandler.applyFill(fillChromosome,intensityDist);
+%         figure
+%         patched = patch(isosurface(padarray(intensityDist,[1,1,1],1e20),threshold));
+%         set(patched,'FaceColor', [30 255 30]/256, 'EdgeColor', 'none');
+%         view(3);
+%         camlight
+%         axis equal
+%         lighting gouraud
+%         xlim([2 size(exposedStruct,2)+1])
+%         ylim([2 size(exposedStruct,1)+1])
+%         zlim([2 size(exposedStruct,3)+1])
+%         
+%         
+        
+        
+        
+        
+%         %Make hexagonal repeat of structure:
+%         lx = size(intensityDist,1);
+%         left = intensityDist(1:floor(lx/2),:,:);
+%         right = intensityDist((floor(lx/2)+1):end,:,:);
+%         top = cat(1,right,left);
+%         intensityDist = cat(2,intensityDist,top);
+
         %Make hexagonal repeat of structure:
-        lx = size(intensityDist,1);
-        left = intensityDist(1:floor(lx/2),:,:);
-        right = intensityDist((floor(lx/2)+1):end,:,:);
-        top = cat(1,right,left);
-        intensityDist = cat(2,intensityDist,top);
+        ly = size(intensityDistInt,2);
+        left = intensityDistInt(:,1:floor(ly/2),:);
+        right = intensityDistInt(:,(floor(ly/2)+1):end,:);
+        top = cat(2,right,left);
+        intensityDistInt = cat(1,intensityDistInt,top);
+
+%         
+%         
+%         %TEST OF HEXAGONAL REPEAT
+%         [exposedStruct,fillfrac,threshold] = GAoptions.fillHandler.applyFill(fillChromosome,intensityDist);
+%         figure
+%         patched = patch(isosurface(padarray(intensityDist,[1,1,1],1e20),threshold));
+%         set(patched,'FaceColor', [30 255 30]/256, 'EdgeColor', 'none');
+%         view(3);
+%         camlight
+%         axis equal
+%         lighting gouraud
+%         xlim([2 size(exposedStruct,2)+1])
+%         ylim([2 size(exposedStruct,1)+1])
+%         zlim([2 size(exposedStruct,3)+1])
+        
+    else
+        intensityDistInt = intensityDist;  %Do no interpolation if already cartesian
+        
+        
     end
     
     %Calc structure
-    [exposedStruct,fillfrac,threshold] = GAoptions.fillHandler.applyFill(fillChromosome,intensityDist);
+    [exposedStruct,fillfrac,threshold] = GAoptions.fillHandler.applyFill(fillChromosome,intensityDistInt);
+    
+    %Do repeating structure:
+    %exposedStructRepeat = repmat(exposedStruct,[1,1,GAoptions.num]
     
     %Export structure/runfile
     %writeLumericalRunFileSquare(GAoptions, simStruct);
@@ -135,6 +184,8 @@ end
 
 
 if GAoptions.runSingle == 1 %Plot simulated structure
+    
+   
     figure
     patched = patch(isosurface(padarray(intensityDist,[1,1,1],1e20),threshold));
     set(patched,'FaceColor', [30 255 30]/256, 'EdgeColor', 'none');
@@ -147,23 +198,19 @@ if GAoptions.runSingle == 1 %Plot simulated structure
     zlim([2 size(intensityDist,3)+1])
     
     
-    if strcmp(GAoptions.lattice, 'square') %&& ~strcmp(strtrim(GAoptions.hostname),'Daniel-netbook')
+%     max(max(intensityDist(10,:,:))) - min(min(intensityDist(10,:,:)))
+%     %Plot intensity cross-section
+%     figure
+%     HeatMap(squeeze(intensityDist(10,:,:)) - min(min(squeeze(intensityDist(10,:,:)))) )
+%     
+    
+    if strcmp(GAoptions.lattice, 'square') && ~strcmp(strtrim(GAoptions.hostname),'Daniel-netbook')
+        
         
         %Do Lumerical simulation
-        
-        %Create skin
-        if GAoptions.useSkinSingle == 1
-            skin = calcSkin(~exposedStruct, GAoptions.skinIterations ); %calcSkin assumes that 1 represents void space
-            writeLumericalRunFileSkin(GAoptions, skin);
-        else %Just do complete inversion
-            writeLumericalRunFileSquare(GAoptions, exposedStruct);
-        end
-        
-
-        %writeLumericalRunFileSquare(GAoptions, intensityDist>threshold);
-
+        writeLumericalRunFileSquare(GAoptions, intensityDist>threshold);
         system(['fdtd-solutions -run ', GAoptions.dir, GAoptions.LumRunScript]);
-        while(~exist([GAoptions.dir,GAoptions.currentLumResultsFile,'.mat'],'file'))
+        while(~exist([GAoptions.dir,GAoptions.currentLumResultsFile],'file'))
             pause(0.1)
         end
         LumResults = load([GAoptions.dir,GAoptions.currentLumResultsFile]);
@@ -210,7 +257,7 @@ if GAoptions.runSingle == 1 %Plot simulated structure
             
             writeLumericalRunFileSquare(GAoptions, intensityDistComb>threshold);
             system(['fdtd-solutions -run ', GAoptions.dir, GAoptions.LumRunScript]);
-            while(~exist([GAoptions.dir,GAoptions.currentLumResultsFile,'.mat'],'file'))
+            while(~exist([GAoptions.dir,GAoptions.currentLumResultsFile],'file'))
                 pause(0.1)
             end
             LumResults = load([GAoptions.dir,GAoptions.currentLumResultsFile]);
