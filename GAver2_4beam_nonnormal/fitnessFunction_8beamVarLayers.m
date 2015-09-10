@@ -147,11 +147,21 @@ if GAoptions.runSingle == 1 %Plot simulated structure
     zlim([2 size(intensityDist,3)+1])
     
     
-    if strcmp(GAoptions.lattice, 'square') && ~strcmp(strtrim(GAoptions.hostname),'Daniel-netbook')
-        
+    if strcmp(GAoptions.lattice, 'square') %&& ~strcmp(strtrim(GAoptions.hostname),'Daniel-netbook')
         
         %Do Lumerical simulation
-        writeLumericalRunFileSquare(GAoptions, intensityDist>threshold);
+        
+        %Create skin
+        if GAoptions.useSkinSingle == 1
+            skin = calcSkin(~exposedStruct, GAoptions.skinIterations ); %calcSkin assumes that 1 represents void space
+            writeLumericalRunFileSkin(GAoptions, skin);
+        else %Just do complete inversion
+            writeLumericalRunFileSquare(GAoptions, exposedStruct);
+        end
+        
+
+        %writeLumericalRunFileSquare(GAoptions, intensityDist>threshold);
+
         system(['fdtd-solutions -run ', GAoptions.dir, GAoptions.LumRunScript]);
         while(~exist([GAoptions.dir,GAoptions.currentLumResultsFile,'.mat'],'file'))
             pause(0.1)

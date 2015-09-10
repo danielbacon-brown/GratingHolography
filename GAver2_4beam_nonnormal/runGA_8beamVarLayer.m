@@ -256,7 +256,9 @@ GAoptions.hostname = strtrim(hostname);
     GAoptions.fillHandler = FillFactorHandler(fillOptions)
     
     
-    
+    %%%%% SKIN %%%%%
+    GAoptions.useSkinSingle = 1;  %Whether or not to do the skin calculation when doing a "single" calc
+    GAoptions.skinIterations = 3; 
     
     
     
