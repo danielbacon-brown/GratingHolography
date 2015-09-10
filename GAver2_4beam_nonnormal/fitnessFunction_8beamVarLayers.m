@@ -204,11 +204,20 @@ if GAoptions.runSingle == 1 %Plot simulated structure
 %     HeatMap(squeeze(intensityDist(10,:,:)) - min(min(squeeze(intensityDist(10,:,:)))) )
 %     
     
-    if strcmp(GAoptions.lattice, 'square') && ~strcmp(strtrim(GAoptions.hostname),'Daniel-netbook')
+    if strcmp(GAoptions.lattice, 'square') %&& ~strcmp(strtrim(GAoptions.hostname),'Daniel-netbook')
         
+        %Apply skin
+        if GAoptions.useSkinSingle == 1
+            skin = calcSkin(exposedStruct,GAoptions.skinIterations);
+            writeLumericalRunFileSkin(GAoptions, skin);
+        else
+            writeLumericalRunFileSquare(GAoptions, exposedStruct);
+        end
         
         %Do Lumerical simulation
-        writeLumericalRunFileSquare(GAoptions, intensityDist>threshold);
+        %writeLumericalRunFileSquare(GAoptions, intensityDist>threshold);
+        
+        
         system(['fdtd-solutions -run ', GAoptions.dir, GAoptions.LumRunScript]);
         while(~exist([GAoptions.dir,GAoptions.currentLumResultsFile],'file'))
             pause(0.1)

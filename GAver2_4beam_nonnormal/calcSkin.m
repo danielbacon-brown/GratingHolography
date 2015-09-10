@@ -10,7 +10,7 @@ function skin = calcSkin(struct, numIterations)
 skin = zeros(size(struct) + [2,2,2]);  %Creates a skin matrix ( 1 => is part of skin)
 newskin = zeros(size(struct) + [2,2,2]);
 
-struct = padarray( struct, [1,1,1] )
+struct = padarray( struct, [1,1,1] );
 
 %Copy edges of the structure:
 struct(1,:,:) = struct(end-1,:,:);
