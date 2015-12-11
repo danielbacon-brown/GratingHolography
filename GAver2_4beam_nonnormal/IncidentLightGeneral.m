@@ -90,6 +90,9 @@ classdef IncidentLightGeneral %< IncidentLightGenerator
             fieldParameters.Esp = [cos(psi)*cos(chi)-1i*sin(psi)*sin(chi); ...  %Calculate incident Field E-vector
                 sin(psi)*cos(chi)+1i*cos(psi)*sin(chi)] .* sqrt(2*L.Pdens/(L.n_incidence*L.eps_0*L.c) ); %/ cos(fieldParameters.phi) ); %Should be units of V/sqrt(unit-area)
             
+            
+            
+            
        end
 
        function chromosomeSize = getChromosomeSize(L) %Returns size of required chromosome

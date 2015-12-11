@@ -1,7 +1,7 @@
 function plotS4grating(grating,lattice)
             strat = grating.stratum{1,1};
-	periodX = grating.d21;
-	periodY = grating.d32;
+	periodX = grating.d21
+	periodY = grating.d32
     
     
     figure;
@@ -20,11 +20,11 @@ function plotS4grating(grating,lattice)
                 blockEnd = stripe.block{1,b}.c2; %right edge of current block
                 if stripe.block{1,b}.pmt_index == 2 %if it's marked as SU8
                     %                       centerX = ((lastX + blockEnd)/2 + lastY/2) * periodX + horiOffset; %scale by periodX because GDC does it relative to periodicity (period=1) %also shift to right as you go up in y
-                    centerX = (lastX + blockEnd)/2 * periodX;
-                    widthX = (blockEnd - lastX) * periodX;
+                    centerX = (lastX + blockEnd)/2 * periodY;
+                    widthX = (blockEnd - lastX) * periodY;
                     %                       centerY = (stripeEnd + lastY)/2 * periodY + vertOffset;
-                    centerY = (stripeEnd + lastX)/2 * periodY;
-                    widthY = (stripeEnd - lastX) * periodY;
+                    centerY = (stripeEnd + lastX)/2 * periodX;
+                    widthY = (stripeEnd - lastX) * periodX;
                     %setLayerScript = [setLayerScript, sprintf('S:SetLayerPatternRectangle(''Grating'', ''SU8'', {%1.7f,%1.7f}, 0, {%1.7f,%1.7f}) \r\n',centerX,centerY,widthX/2,widthY/2)];
                     
                     rectangle('Position',[centerX-widthX/2, centerY-widthY/2, widthX,widthY]);
@@ -39,8 +39,10 @@ function plotS4grating(grating,lattice)
         %STRIPES PARALLEL TO Y axis
     elseif strcmp(lattice,'hexagonal')
         %Define block dimensions and positions:
-        horiOffset = -periodX/2;  %Need to shift the block positions up and to the right as you move up in stripe#
-        vertOffset = -periodY/2;
+        horiOffset = 0;
+        vertOffset = 0;
+        %horiOffset = -periodX/2;  %Need to shift the block positions up and to the right as you move up in stripe#
+        %vertOffset = -periodY/2;
         lastX = 0; %marks the position of the end of the last stripe
         for s = 1:length(strat.stripe) %iterate by stripe
             stripe = strat.stripe{1,s};
@@ -53,9 +55,9 @@ function plotS4grating(grating,lattice)
                     centerY = (lastY + blockEnd)/2 * periodY + vertOffset; %scale by periodX because GDC does it relative to periodicity (period=1) %also shift to right as you go up in y
                     %centerX = (lastX + blockEnd)/2 * periodX;
                     widthY = (blockEnd - lastY) * periodY;
-                    centerX = (stripeEnd + lastX)/2 * periodY + horiOffset;
+                    centerX = (stripeEnd + lastX)/2 * periodX + horiOffset;
                     %centerY = (stripeEnd + lastY)/2 * periodY;
-                    widthX = (stripeEnd - lastX) * periodY;
+                    widthX = (stripeEnd - lastX) * periodX;
                     %setLayerScript = [setLayerScript, sprintf('S:SetLayerPatternRectangle(''Grating'', ''SU8'', {%1.7f,%1.7f}, 0, {%1.7f,%1.7f}) \r\n',centerX,centerY,widthX/2,widthY/2)];
 
                     rectangle('Position',[centerX-widthX/2, centerY-widthY/2, widthX,widthY]);

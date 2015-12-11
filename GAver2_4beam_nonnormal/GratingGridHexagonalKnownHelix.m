@@ -99,16 +99,20 @@ classdef GratingGridHexagonalKnownHelix
             spacingYfrac = convertChrom_gc( spacingYchrom, ones(1,A)*G.chromNspacingY) ;
             
             %Base values (will give previously used helix pattern)
-            spacingXbase = [0.2219;0.2852;0.5];
+            spacingXbase = [0.22185;0.2851;0.5];
             spacingYbase = [0.6391;0.6391;0.2717;0.2717];
             
             spacingXmodMin = 0.9;
             spacingXmodMax = 1.1;
             spacingYmodMin = 0.9;
             spacingYmodMax = 1.1;
+%             spacingXmodMin = 0.999;
+%             spacingXmodMax = 1.001;
+%             spacingYmodMin = 0.999;
+%             spacingYmodMax = 1.001;
             
             for ix = 1:size(spacingXbase,1)
-                spacingXfrac(ix) = spacingXfrac(ix)*(spacingXmodMax-spacingXmodMin) + spacingXmodMin;
+                spacingXfrac(ix) = spacingXfrac(ix)*(spacingXmodMax-spacingXmodMin) + spacingXmodMin
             end
             for iy = 1:size(spacingYbase,1)
                 spacingYfrac(iy) = spacingYfrac(iy)*(spacingYmodMax-spacingYmodMin) + spacingYmodMin;
@@ -118,11 +122,11 @@ classdef GratingGridHexagonalKnownHelix
             %spacingX describes the positions of the edge between blocks
             remaining = 1; %describes thickness between most recent spacingX and the end of line
             for a = 1:(A-1)
-                spacingX(a+1) = spacingXfrac(a)*spacingXbase(a)*( (a+1)/A *remaining) + (1-remaining) ;  %relative to origin
+                spacingX(a+1) = spacingXfrac(a)*spacingXbase(a)*( remaining) + (1-remaining)   %relative to origin
                 %spacingX(a+1) = spacingXfrac(a)*( (remaining - G.spacingMin*(A-a)) - (G.spacingMin) ) + G.spacingMin+(1-remaining);   %frac*( maxT-minT)+minT
-                remaining = 1-spacingX(a+1);
+                remaining = 1-spacingX(a+1)
             end
-            spacingX(A+1) = 1;
+            spacingX(A+1) = 1
             
             %remaining = 1; 
             for b = 1:A
@@ -152,7 +156,7 @@ classdef GratingGridHexagonalKnownHelix
             for ix = 1:G.NblockX %stripes run along y-direction
                 grating.stratum{1}.stripe{ix}.type = 1;  %inhomogeneous stripe
                 %grating.stratum{1}.stripe{j}.c1 = spacingYfrac(j+1);  %width of stripe
-                grating.stratum{1}.stripe{ix}.c1 = spacingX(ix+1); 
+                grating.stratum{1}.stripe{ix}.c1 = spacingX(ix+1)
                 %blockNum = 1; %the order of the current block
                 for iy = 1:G.NblockY
 

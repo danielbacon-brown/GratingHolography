@@ -11,8 +11,8 @@ GAoptions.hostname = strtrim(hostname);
 
 
     %%%%% Genetic Algorithm Options %%%%%
-    GAoptions.popSize = 100;
-    GAoptions.numGen = 20;
+    GAoptions.popSize = 6;
+    GAoptions.numGen = 1;
     GAoptions.elite = 3;
     GAoptions.numRepetitions = 1; %Number of times to repeat the GA
     
@@ -124,7 +124,8 @@ GAoptions.hostname = strtrim(hostname);
     
     %Just SU8
     S4interfaceOptions.layers(1) = Layer('Front','Vacuum',0);
-    S4interfaceOptions.layers(2) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer);
+    S4interfaceOptions.layers(2) = Layer('Grating','Vacuum', -1, 0.064,0.064,chromNlayer);
+    %S4interfaceOptions.layers(2) = Layer('Grating','Vacuum', -1, 0,0.3,chromNlayer);
     S4interfaceOptions.layers(3) = Layer('PrInterference','SU8',-1,5,15,chromNlayer);
     S4interfaceOptions.layers(4) = Layer('Back','SU8', 0);
     
@@ -301,7 +302,8 @@ GAoptions.hostname = strtrim(hostname);
     
     
     %%%%% FILL %%%%%
-    fillOptions.constFill = -1;
+    fillOptions.constFill = 0.84;
+    %fillOptions.constFill = -1;
     fillOptions.fillMax = 0.9;
     fillOptions.fillMin = 0.8;
     fillOptions.chromNfill = 8;

@@ -44,11 +44,11 @@ classdef S4interfaceSquareGeneral
                 , latticeStr ...
                 , 'S:SetNumG(9) \r\n' ...
 ..., 'S:SetNumG(100) \r\n' ...
-                , 'S:SetResolution(16) \r\n' ...
-                , 'S:UseDiscretizedEpsilon(1) \r\n' ...
                 , 'S:UsePolarizationDecomposition(1) \r\n' ...
-                , 'S:UseJonesVectorBasis(1) \r\n' ...
-                , 'S:SetLatticeTruncation(''Parallelogramic'') \r\n' ...
+                , 'S:SetResolution(16) \r\n' ...
+                ..., 'S:UseDiscretizedEpsilon(1) \r\n' ...
+                ..., 'S:UseJonesVectorBasis(1) \r\n' ...
+                ..., 'S:SetLatticeTruncation(''Parallelogramic'') \r\n' ...
                 ];
             
             
@@ -256,11 +256,13 @@ delete([scriptFilename]);
         function makeRunScript(S,GAoptions,grating,incidentFieldParams,dataFilename,scriptFilename,layerChromosomes,materialChromosomes)
             strat = grating.stratum{1,1};
             
+            save('lastgrating','grating');
+            
+            
             periodX = grating.d21;
             periodY = grating.d32;
             
 
-  
             
             
             %Set Layers:
@@ -340,8 +342,10 @@ delete([scriptFilename]);
                 %                 end
                 
                 %Define block dimensions and positions:
+                %horiOffset = 0;
+                vertOffset = 0;
                 horiOffset = -periodX/2;  %Need to shift the block positions up and to the right as you move up in stripe#
-                vertOffset = -periodY/2;
+                %vertOffset = -periodY/2;
                 lastX = 0; %marks the position of the end of the last stripe
                 for s = 1:length(strat.stripe) %iterate by stripe
                     stripe = strat.stripe{1,s};
@@ -354,9 +358,9 @@ delete([scriptFilename]);
                             centerY = (lastY + blockEnd)/2 * periodY + vertOffset; %scale by periodX because GDC does it relative to periodicity (period=1) %also shift to right as you go up in y
                             %centerX = (lastX + blockEnd)/2 * periodX;
                             widthY = (blockEnd - lastY) * periodY;
-                            centerX = (stripeEnd + lastX)/2 * periodY + horiOffset;
+                            centerX = (stripeEnd + lastX)/2 * periodX + horiOffset;
                             %centerY = (stripeEnd + lastY)/2 * periodY;
-                            widthX = (stripeEnd - lastX) * periodY;
+                            widthX = (stripeEnd - lastX) * periodX;
                             setLayerScript = [setLayerScript, sprintf('S:SetLayerPatternRectangle(''Grating'', ''SU8'', {%1.7f,%1.7f}, 0, {%1.7f,%1.7f}) \r\n',centerX,centerY,widthX/2,widthY/2)];
                             
                             %rectangle('Position',[centerX-widthX/2, centerY-widthY/2, widthX,widthY]);
@@ -375,6 +379,10 @@ delete([scriptFilename]);
             Es = incidentFieldParams.Esp(2,1);
             Ep = incidentFieldParams.Esp(1,1);
             
+% %%%%%%TEST%%%%%%%            
+% Es = 3150.2
+% Ep = 293.7
+
             
             %Set the output data filename variable to be used in cs2
             setDataFilenameScript = sprintf('dataFilename = "%s" \r\n',GAoptions.dir,dataFilename);
@@ -389,12 +397,13 @@ delete([scriptFilename]);
                 , 'S:SetFrequency(1/0.532) \r\n' ...
                 ];
             %For visualizing the grating
-            %varScript = [varScript, 'S:OutputStructurePOVRay(''HelixPOVrayScript.pov'') \n'];
+            displayScript = ['S:OutputStructurePOVRay(''HelixPOVrayScript.pov'') \r\n'];
             
             
             %Write strings to file and run:
             ef=fopen([GAoptions.dir,scriptFilename],'w');  %open/create file
-            fprintf(ef,[S.setBasicScript,setMaterialsScript,setLayerScript,excitationScript, setDataFilenameScript, S.collectDataScript, S.getAmplitudesScript]);
+            %fprintf(ef,[S.setBasicScript,setMaterialsScript,setLayerScript,excitationScript, setDataFilenameScript, S.collectDataScript, S.getAmplitudesScript]);
+            fprintf(ef,[S.setBasicScript,setMaterialsScript,setLayerScript,excitationScript, setDataFilenameScript, S.collectDataScript, S.getAmplitudesScript,displayScript]);
             fclose(ef);
             
             
