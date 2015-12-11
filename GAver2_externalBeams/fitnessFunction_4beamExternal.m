@@ -1,80 +1,160 @@
-function fitness = fitnessFunction_8beamVarLayers(GAoptions,chromosome)
+function fitness = fitnessFunction_4beamExternal(GAoptions,chromosome)
 %Designed to be a fairly general fitness function
 %Use in a separate file allows the chromosome to be measured directly
 
-%Get layer chromosome length
-chromNlayer=0;
-for i=1:length(GAoptions.S4interfaceOptions.layers)
-   chromNlayer=chromNlayer+GAoptions.S4interfaceOptions.layers(i).getChromosomeSize();
-end
-%Get material chromosome length
-chromNmaterial=0;
-for i=1:length(GAoptions.S4interfaceOptions.materials)
-   chromNmaterial=chromNmaterial+GAoptions.S4interfaceOptions.materials(i).getChromosomeSize();
-end
 
-%Splits chromosome according to each module
-[gratingChromosome ,incidentLightChromosome, offsetChromosome,layerChromosome,materialChromosome, fillChromosome ] = splitChromosome(chromosome,[ ...
-    GAoptions.gratingFunction.getChromosomeSize(), ...
-    GAoptions.incidentLightFunction.getChromosomeSize(),  ...
-    GAoptions.offsetConductor.getChromosomeSize(), ...
-    chromNlayer ...
-    chromNmaterial ...
-    GAoptions.fillHandler.getChromosomeSize() ...
-    ]);
+%Instead of S4, using the general beam interference analysis, because there
+%is no diffraction
 
-%Splits layer chromosome into 1 for each layer
-layerChromosomes = cell(length(GAoptions.S4interfaceOptions.layers),1);
-u=0;
-for i_l = 1:length(GAoptions.S4interfaceOptions.layers)  %IF the layer has constant thickness, don't make a chromosome for it
-    if GAoptions.S4interfaceOptions.layers(i_l).constThick >= 0
-        layerChromosomes{i_l} = [];
-    else
-        layerChromosomes{i_l} = layerChromosome( (u+1):(u+GAoptions.S4interfaceOptions.layers(i_l).getChromosomeSize()) );
-        u = u + GAoptions.S4interfaceOptions.layers(i_l).getChromosomeSize();
-    end
-end
+% %Get layer chromosome length
+% chromNlayer=0;
+% for i=1:length(GAoptions.S4interfaceOptions.layers)
+%    chromNlayer=chromNlayer+GAoptions.S4interfaceOptions.layers(i).getChromosomeSize();
+% end
+% %Get material chromosome length
+% chromNmaterial=0;
+% for i=1:length(GAoptions.S4interfaceOptions.materials)
+%    chromNmaterial=chromNmaterial+GAoptions.S4interfaceOptions.materials(i).getChromosomeSize();
+% end
 
-%Splits layer chromosome into 1 for each layer
-materialChromosomes = cell(length(GAoptions.S4interfaceOptions.materials),1);
-u=0;
-for i_m = 1:length(GAoptions.S4interfaceOptions.materials)  %IF the layer has constant thickness, don't make a chromosome for it
-    if GAoptions.S4interfaceOptions.materials(i_m).constRI >= 0
-        materialChromosomes{i_m} = [];
-    else
-        materialChromosomes{i_m} = materialChromosome( (u+1):(u+GAoptions.S4interfaceOptions.materials(i_m).getChromosomeSize()) )
-        u = u + GAoptions.S4interfaceOptions.materials(i_m).getChromosomeSize();
-    end
-end
+% %Splits chromosome according to each module
+% [gratingChromosome ,incidentLightChromosome, offsetChromosome,layerChromosome,materialChromosome, fillChromosome ] = splitChromosome(chromosome,[ ...
+%     GAoptions.gratingFunction.getChromosomeSize(), ...
+%     GAoptions.incidentLightFunction.getChromosomeSize(),  ...
+%     GAoptions.offsetConductor.getChromosomeSize(), ...
+%     chromNlayer ...
+%     chromNmaterial ...
+%     GAoptions.fillHandler.getChromosomeSize() ...
+%     ]);
 
+%Assumes using 4beam geometry (first beam is central, replace s with x and p with y)
+[EsChromosome,  EpChromosome, phaseChromosome, incidentAngleChromosome,  offsetChromosome, fillChromosome ] = splitChromosome(chromosome,[ ...
+    8*4,  8*4,  8*4, 8,  GAoptions.offsetConductor.getChromosomeSize(), GAoptions.fillHandler.getChromosomeSize() ]) ;
 
-%Generate Grating
-grating = GAoptions.gratingFunction.generateGrating(gratingChromosome);
+[Ex1,Es2,Es3,Es4] = convertChrom_gc(EsChromosome, [8,8,8,8] );
+[Ey1,Ep2,Ep3,Ep4] = convertChrom_gc(EpChromosome, [8,8,8,8] );
+[phase1,phase2,phase3,phase4] = convertChrom_gc(phaseChromosome, [8,8,8,8] );
+phase1=phase1*2*pi; phase2=phase2*2*pi; phase3=phase3*2*pi; phase4=phase4*2*pi;
+incidentAngle = convertChrom_gc(incidentAngleChromosome, 8)*(GAoptions.incidentAngleMax-GAoptions.incidentAngleMin) + GAoptions.incidentAngleMin;
 
+%TEST
+%incidentAngle = pi/4
 
-    %plotS4grating(grating,GAoptions.lattice)
-if GAoptions.runSingle == 1
-    %GAoptions.gratingFunction.plotGrating(grating);  %plot grating
-    plotS4grating(grating,GAoptions.lattice)
-end
+n_PR = 1.58;
+lambda = 0.532/n_PR; %um
+period = 2*lambda/(sqrt(3)*sin(incidentAngle));
+%period = 2*lambda/(2*sin(incidentAngle))
+d = lambda/(2*sin(incidentAngle/2)^2);
 
+periodx = period;
+periody = period*sqrt(3)/2;
+periodz = d;
+% periodx = period*sqrt(3)/2
+% periody = period
+% periodz = d
 
-
-%Incident Field
-incidentFieldParams = GAoptions.incidentLightFunction.generateField(incidentLightChromosome);
-
-if GAoptions.runSingle == 1
-   GAoptions.incidentLightFunction.plotPolarizationEsp(incidentFieldParams.Esp); 
-end
+%Nx = 30
+%Ny = floor(Nx*periody/periodx)
+%Nz = floor(Nx*periodz/periodx)
+Nx = GAoptions.cellsCart(1);
+Ny = GAoptions.cellsCart(2);
+Nz = GAoptions.cellsCart(3);
 
 
-%Do RCWA analysis with S4:
-intensityDist = GAoptions.S4interface.doRCWA(GAoptions,grating,incidentFieldParams,layerChromosomes,materialChromosomes);  %Note: this intensityDist is based on a hexagonal parallelogram
-if length(intensityDist)<1  %If the RCWA failed, return bad fitness and move on
-   fitness = 10;
-   return;
-end
+%Calc propagation vectors:
+%Rotation matrices for 120 and 240 deg
+theta_1 = 120/180*pi;
+theta_2 = -120/180*pi;
+R_1 = [cos(theta_1),-sin(theta_1),0;
+    sin(theta_1),cos(theta_1),0;
+    0,0,1];
+R_2 = [cos(theta_2),-sin(theta_2),0;
+    sin(theta_2),cos(theta_2),0;
+    0,0,1];
+%R_z rotates between 
+R_z = [1,0,0; %Rotates along x-axis
+    0,cos(incidentAngle),sin(incidentAngle);
+    0,-sin(incidentAngle),cos(incidentAngle)];
+% R_z = [cos(incidentAngle),0,sin(incidentAngle); %Rotates along y-axis
+%     0,1,0;
+%     -sin(incidentAngle),0,cos(incidentAngle)];
 
+k_1 = [0;0;-1]*2*pi/ lambda; %Vertical
+%k_2 = [0;-sin(incidentAngle);-cos(incidentAngle)]*2*pi / lambda
+k_2 = R_z*k_1;
+k_3 = R_1*k_2;
+k_4 = R_2*k_2;
+k = [k_1,k_2,k_3,k_4];
+
+
+%Calc electric field vectors:
+%Beam 2 is propagating in -y direction
+E_1 = [Ex1;Ey1;0];
+E_2_sp = [Es2;Ep2*exp(1i*phase2);0];
+E_3_sp = [Es3;Ep3*exp(1i*phase3);0];
+E_4_sp = [Es4;Ep4*exp(1i*phase4);0];
+
+%NOW NEED TO ROTATE FIELDS FROM VERTICAL TO ANGLED:
+E_2 = R_z*E_2_sp;
+E_3 = R_1*R_z*E_3_sp;
+E_4 = R_2*R_z*E_4_sp;
+
+E = [E_1,E_2,E_3,E_4];
+
+intensityDist = icalc_mod(E,k,periodx,periody,periodz,Nx,Ny,Nz,[0,0,0],1,1);
+    
+    
+
+
+% 
+% %Splits layer chromosome into 1 for each layer
+% layerChromosomes = cell(length(GAoptions.S4interfaceOptions.layers),1);
+% u=0;
+% for i_l = 1:length(GAoptions.S4interfaceOptions.layers)  %IF the layer has constant thickness, don't make a chromosome for it
+%     if GAoptions.S4interfaceOptions.layers(i_l).constThick >= 0
+%         layerChromosomes{i_l} = [];
+%     else
+%         layerChromosomes{i_l} = layerChromosome( (u+1):(u+GAoptions.S4interfaceOptions.layers(i_l).getChromosomeSize()) );
+%         u = u + GAoptions.S4interfaceOptions.layers(i_l).getChromosomeSize();
+%     end
+% end
+
+% %Splits layer chromosome into 1 for each layer
+% materialChromosomes = cell(length(GAoptions.S4interfaceOptions.materials),1);
+% u=0;
+% for i_m = 1:length(GAoptions.S4interfaceOptions.materials)  %IF the layer has constant thickness, don't make a chromosome for it
+%     if GAoptions.S4interfaceOptions.materials(i_m).constRI >= 0
+%         materialChromosomes{i_m} = [];
+%     else
+%         materialChromosomes{i_m} = materialChromosome( (u+1):(u+GAoptions.S4interfaceOptions.materials(i_m).getChromosomeSize()) )
+%         u = u + GAoptions.S4interfaceOptions.materials(i_m).getChromosomeSize();
+%     end
+% end
+
+% 
+% %Generate Grating
+% grating = GAoptions.gratingFunction.generateGrating(gratingChromosome);
+% 
+% if GAoptions.runSingle == 1
+%     GAoptions.gratingFunction.plotGrating(grating);  %plot grating
+% end
+
+
+% 
+% %Incident Field
+% incidentFieldParams = GAoptions.incidentLightFunction.generateField(incidentLightChromosome);
+% 
+% if GAoptions.runSingle == 1
+%    GAoptions.incidentLightFunction.plotPolarizationEsp(incidentFieldParams.Esp); 
+% end
+
+% 
+% %Do RCWA analysis with S4:
+% intensityDist = GAoptions.S4interface.doRCWA(GAoptions,grating,incidentFieldParams,layerChromosomes,materialChromosomes);  %Note: this intensityDist is based on a hexagonal parallelogram
+% if length(intensityDist)<1  %If the RCWA failed, return bad fitness and move on
+%    fitness = 10;
+%    return;
+% end
 
 
 %Do offset of interference pattern
@@ -188,6 +268,17 @@ end
 
 if GAoptions.runSingle == 1 %Plot simulated structure
     
+    
+    
+    %Plot vectors:
+    figure
+    hold on
+    origins = zeros(size(k));
+    quiver3(origins(1,:), origins(2,:), origins(3,:), k(1,:)*lambda, k(2,:)*lambda, k(3,:)*lambda) %k vectors 
+    quiver3(k(1,:)*lambda, k(2,:)*lambda, k(3,:)*lambda, real(E(1,:)), real(E(2,:)), real(E(3,:))) %E vectors
+    axis equal
+
+    
    
     figure
     patched = patch(isosurface(padarray(intensityDist,[1,1,1],1e20),threshold));
@@ -242,20 +333,20 @@ if GAoptions.runSingle == 1 %Plot simulated structure
         
 
     elseif strcmp(GAoptions.lattice, 'hexagonal')
-        %If hexagonal, convert to cartesian system for plotting and lumerical:
-        intensityDist = hex2cart(intensityDist, GAoptions.cellsCart);
-        
-        %Plot cartesian
-        figure
-        patched = patch(isosurface(padarray(intensityDist,[1,1,1],1e20),threshold));
-        set(patched,'FaceColor', [30 255 30]/256, 'EdgeColor', 'none');
-        view(3);
-        camlight
-        axis equal
-        lighting gouraud
-        xlim([2 size(intensityDist,2)+1])
-        ylim([2 size(intensityDist,1)+1])
-        zlim([2 size(intensityDist,3)+1])
+%         %If hexagonal, convert to cartesian system for plotting and lumerical:
+%         intensityDist = hex2cart(intensityDist, GAoptions.cellsCart);
+%         
+%         %Plot cartesian
+%         figure
+%         patched = patch(isosurface(padarray(intensityDist,[1,1,1],1e20),threshold));
+%         set(patched,'FaceColor', [30 255 30]/256, 'EdgeColor', 'none');
+%         view(3);
+%         camlight
+%         axis equal
+%         lighting gouraud
+%         xlim([2 size(intensityDist,2)+1])
+%         ylim([2 size(intensityDist,1)+1])
+%         zlim([2 size(intensityDist,3)+1])
         
         if ~strcmp(strtrim(GAoptions.hostname),'Daniel-netbook')
             %Do Lumerical simulation
@@ -319,43 +410,43 @@ if GAoptions.runSingle == 1 %Plot simulated structure
 
     
     
-    %Do sensitizer sim
-    acidCount = excitePAG(intensityDist,GAoptions.dimensions,GAoptions.sensSim.sensDens,GAoptions.sensSim.absCrossSection,GAoptions.sensSim.Texposure);
-    acidMax = max(max(max(acidCount)))
-    acidMin = min(min(min(acidCount)))
-    threshold = fixfill(acidCount,256,fillfrac); %Calculates the threshold value that will yield desired fill fraction
-    figure
-    patched = patch(isosurface(padarray(acidCount,[1,1,1],1e20),threshold));
-    set(patched,'FaceColor', [255 127 80]/256, 'EdgeColor', 'none');
-    view(3);
-    camlight
-    axis equal
-    lighting gouraud
-    xlim([2 size(acidCount,2)+1])
-    ylim([2 size(acidCount,1)+1])
-    zlim([2 size(acidCount,3)+1])
-    
-    
-    %DO SMOOTHING//DIFFUSION (WITH SUMMING)
-    diffRate = 5;
-    smoothed = zeros([size(acidCount),8]);
-    smoothed(:,:,:,1) = smooth3(acidCount,'gaussian',diffRate);
-    for smooth_i = 2:size(smoothed,4)
-        smoothed(:,:,:,smooth_i) = smooth3(smoothed(:,:,:,smooth_i-1),'gaussian',diffRate);
-        disp(smooth_i)
-    end
-    crosslinkCount = sum(smoothed,4);
-    crosslinkThreshold = fixfill(crosslinkCount, 256, fillfrac)
-    figure
-    patched = patch(isosurface(padarray(crosslinkCount,[1,1,1],1e20),crosslinkThreshold));
-    set(patched,'FaceColor', [255 127 80]/256, 'EdgeColor', 'none');
-    view(3);
-    camlight
-    axis equal
-    lighting gouraud
-    xlim([2 size(acidCount,2)+1])
-    ylim([2 size(acidCount,1)+1])
-    zlim([2 size(acidCount,3)+1])
+%     %Do sensitizer sim
+%     acidCount = excitePAG(intensityDist,GAoptions.dimensions,GAoptions.sensSim.sensDens,GAoptions.sensSim.absCrossSection,GAoptions.sensSim.Texposure);
+%     acidMax = max(max(max(acidCount)))
+%     acidMin = min(min(min(acidCount)))
+%     threshold = fixfill(acidCount,256,fillfrac); %Calculates the threshold value that will yield desired fill fraction
+%     figure
+%     patched = patch(isosurface(padarray(acidCount,[1,1,1],1e20),threshold));
+%     set(patched,'FaceColor', [255 127 80]/256, 'EdgeColor', 'none');
+%     view(3);
+%     camlight
+%     axis equal
+%     lighting gouraud
+%     xlim([2 size(acidCount,2)+1])
+%     ylim([2 size(acidCount,1)+1])
+%     zlim([2 size(acidCount,3)+1])
+%     
+%     
+%     %DO SMOOTHING//DIFFUSION (WITH SUMMING)
+%     diffRate = 5;
+%     smoothed = zeros([size(acidCount),8]);
+%     smoothed(:,:,:,1) = smooth3(acidCount,'gaussian',diffRate);
+%     for smooth_i = 2:size(smoothed,4)
+%         smoothed(:,:,:,smooth_i) = smooth3(smoothed(:,:,:,smooth_i-1),'gaussian',diffRate);
+%         disp(smooth_i)
+%     end
+%     crosslinkCount = sum(smoothed,4);
+%     crosslinkThreshold = fixfill(crosslinkCount, 256, fillfrac)
+%     figure
+%     patched = patch(isosurface(padarray(crosslinkCount,[1,1,1],1e20),crosslinkThreshold));
+%     set(patched,'FaceColor', [255 127 80]/256, 'EdgeColor', 'none');
+%     view(3);
+%     camlight
+%     axis equal
+%     lighting gouraud
+%     xlim([2 size(acidCount,2)+1])
+%     ylim([2 size(acidCount,1)+1])
+%     zlim([2 size(acidCount,3)+1])
     
     
     %CALCULATE REPEAT CELLS

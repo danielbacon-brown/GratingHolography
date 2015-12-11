@@ -51,11 +51,8 @@ end
 %Generate Grating
 grating = GAoptions.gratingFunction.generateGrating(gratingChromosome);
 
-
-    %plotS4grating(grating,GAoptions.lattice)
 if GAoptions.runSingle == 1
-    %GAoptions.gratingFunction.plotGrating(grating);  %plot grating
-    plotS4grating(grating,GAoptions.lattice)
+    GAoptions.gratingFunction.plotGrating(grating);  %plot grating
 end
 
 
@@ -79,7 +76,7 @@ end
 
 %Do offset of interference pattern
 intensityDist = GAoptions.offsetConductor.doOffset(intensityDist, offsetChromosome); %W/(unitarea)
-%Check for about 0 intensity difference
+%Check for about 0 intensity difference - if this is the case, skip this structure
 if (max(max(max(intensityDist))) - min(min(min(intensityDist))) ) / min(min(min(intensityDist))) < 0.01 %if approx no variation in intensity
     fitness = 0;
     return 
@@ -179,6 +176,14 @@ elseif strcmp(GAoptions.fitnessType, 'fdtd')
     %transmissionRight = LumResults.transmission_right/sqrt(2);
     %transmissionLeft = LumResults.transmission_left/sqrt(2);
     %fitness = abs( transmissionRight - transmissionLeft );
+    
+    
+elseif strcmp(GAoptions.fitnessType, 'bandstructure')
+    %Calc structure
+    [exposedStruct,fillfrac,threshold] = GAoptions.fillHandler.applyFill(fillChromosome,intensityDist);
+    %DO MPB
+    fitness = GAoptions.MPBinterface.doMPB(GAoptions,exposedStruct);
+    
 end
 
 %threshold = fixfill(reshape(intensityDist,1,[]),256,GAoptions.fill); %Calculates the threshold value that will yield desired fill fraction

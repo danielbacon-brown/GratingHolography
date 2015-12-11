@@ -47,20 +47,20 @@ for i_offset_u = -1:1
     end
 end
 
-
-% %TEST
-figure
-patched = patch(isosurface(padarray(struct,[1,1,1]),0.5));
-set(patched,'FaceColor', [255 127 80]/256, 'EdgeColor', 'none');
-view(3);
-camlight
-axis equal
-lighting gouraud
-xlim([1 options.cells(1)+2])
-ylim([1 options.cells(2)+2])
-zlim([1 options.cells(3)+2])
-box on
-set(gca,'XTick',[],'YTick',[],'ZTick',[])
+% 
+% % %TEST
+% figure
+% patched = patch(isosurface(padarray(struct,[1,1,1]),0.5));
+% set(patched,'FaceColor', [255 127 80]/256, 'EdgeColor', 'none');
+% view(3);
+% camlight
+% axis equal
+% lighting gouraud
+% xlim([1 options.cells(1)+2])
+% ylim([1 options.cells(2)+2])
+% zlim([1 options.cells(3)+2])
+% box on
+% set(gca,'XTick',[],'YTick',[],'ZTick',[])
 
 
 

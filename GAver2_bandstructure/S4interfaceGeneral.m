@@ -1,4 +1,4 @@
-classdef S4interfaceSquareGeneral
+classdef S4interfaceGeneral
     
     
     properties
@@ -37,6 +37,7 @@ classdef S4interfaceSquareGeneral
                 latticeStr = sprintf( 'S:SetLattice({%1.5f,%1.5f},{%1.5f,%1.5f}) \r\n',periodX,0,0,periodY);
             elseif strcmp(options.lattice,'hexagonal')
                 latticeStr = sprintf( 'S:SetLattice({%1.5f,%1.5f},{%1.5f,%1.5f}) \r\n',periodX,0,periodX/2,periodY);
+            elseif strcmp(options.lattice,'rhombohedral')
             end
             
             S.setBasicScript = [ ...
@@ -313,60 +314,31 @@ delete([scriptFilename]);
                     end
                     lastY = stripeEnd;
                 end
-                
+            
             elseif strcmp(GAoptions.lattice,'hexagonal')
-                %                 %Define block dimensions and positions:
-                %                 vertOffset = -periodX/2;  %Need to shift the block positions up and to the right as you move up in stripe#
-                %                 horiOffset = -periodY/2;
-                %                 lastY = 0; %marks the position of the end of the last stripe
-                %                 for s = 1:length(strat.stripe) %iterate by stripe
-                %                     stripe = strat.stripe{1,s};
-                %                     stripeEnd = stripe.c1; %top edge of stripe
-                %                     lastX = 0; %marks the position of the end of the last block
-                %                     for b = 1:length( stripe.block ) %iterate by block
-                %                         blockEnd = stripe.block{1,b}.c2; %right edge of current block
-                %                         if stripe.block{1,b}.pmt_index == 2 %if it's marked as SU8
-                %                             centerX = ((lastX + blockEnd)/2 + lastY/2) * periodX + horiOffset; %scale by periodX because GDC does it relative to periodicity (period=1) %also shift to right as you go up in y
-                %                             %centerX = (lastX + blockEnd)/2 * periodX;
-                %                             widthX = (blockEnd - lastX) * periodX;
-                %                             centerY = (stripeEnd + lastY)/2 * periodY + vertOffset;
-                %                             %centerY = (stripeEnd + lastY)/2 * periodY;
-                %                             widthY = (stripeEnd - lastY) * periodY;
-                %                             setLayerScript = [setLayerScript, sprintf('S:SetLayerPatternRectangle(''Grating'', ''SU8'', {%1.7f,%1.7f}, 0, {%1.7f,%1.7f}) \r\n',centerX,centerY,widthX/2,widthY/2)];
-                %                         end
-                %                         lastX = blockEnd;
-                %                     end
-                %                     lastY = stripeEnd;
-                %                 end
-                
                 %Define block dimensions and positions:
-                horiOffset = -periodX/2;  %Need to shift the block positions up and to the right as you move up in stripe#
-                vertOffset = -periodY/2;
-                lastX = 0; %marks the position of the end of the last stripe
+                vertOffset = -periodX/2;  %Need to shift the block positions up and to the right as you move up in stripe#
+                horiOffset = -periodY/2;
+                lastY = 0; %marks the position of the end of the last stripe
                 for s = 1:length(strat.stripe) %iterate by stripe
                     stripe = strat.stripe{1,s};
                     stripeEnd = stripe.c1; %top edge of stripe
-                    lastY = 0; %marks the position of the end of the last block
+                    lastX = 0; %marks the position of the end of the last block
                     for b = 1:length( stripe.block ) %iterate by block
                         blockEnd = stripe.block{1,b}.c2; %right edge of current block
                         if stripe.block{1,b}.pmt_index == 2 %if it's marked as SU8
-                            %centerY = ((lastY + blockEnd)/2 + lastY/2) * periodX + horiOffset; %scale by periodX because GDC does it relative to periodicity (period=1) %also shift to right as you go up in y
-                            centerY = (lastY + blockEnd)/2 * periodY + vertOffset; %scale by periodX because GDC does it relative to periodicity (period=1) %also shift to right as you go up in y
+                            centerX = ((lastX + blockEnd)/2 + lastY/2) * periodX + horiOffset; %scale by periodX because GDC does it relative to periodicity (period=1) %also shift to right as you go up in y
                             %centerX = (lastX + blockEnd)/2 * periodX;
-                            widthY = (blockEnd - lastY) * periodY;
-                            centerX = (stripeEnd + lastX)/2 * periodY + horiOffset;
+                            widthX = (blockEnd - lastX) * periodX;
+                            centerY = (stripeEnd + lastY)/2 * periodY + vertOffset;
                             %centerY = (stripeEnd + lastY)/2 * periodY;
-                            widthX = (stripeEnd - lastX) * periodY;
+                            widthY = (stripeEnd - lastY) * periodY;
                             setLayerScript = [setLayerScript, sprintf('S:SetLayerPatternRectangle(''Grating'', ''SU8'', {%1.7f,%1.7f}, 0, {%1.7f,%1.7f}) \r\n',centerX,centerY,widthX/2,widthY/2)];
-                            
-                            %rectangle('Position',[centerX-widthX/2, centerY-widthY/2, widthX,widthY]);
-                            
                         end
                         lastX = blockEnd;
                     end
-                    lastX = stripeEnd;
-                end
-                
+                    lastY = stripeEnd;
+                end                
                 
             end
             

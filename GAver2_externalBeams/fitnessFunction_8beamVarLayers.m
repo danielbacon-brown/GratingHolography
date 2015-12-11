@@ -51,11 +51,8 @@ end
 %Generate Grating
 grating = GAoptions.gratingFunction.generateGrating(gratingChromosome);
 
-
-    %plotS4grating(grating,GAoptions.lattice)
 if GAoptions.runSingle == 1
-    %GAoptions.gratingFunction.plotGrating(grating);  %plot grating
-    plotS4grating(grating,GAoptions.lattice)
+    GAoptions.gratingFunction.plotGrating(grating);  %plot grating
 end
 
 
