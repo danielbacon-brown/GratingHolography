@@ -18,6 +18,8 @@ classdef GratingGridHexagonalKnownHelix
             chromNcellArr; %Num chromosome positions for on-off of grid
             chromNspacingX; %Num chromosome positions for x-lengths of the blocks
             chromNspacingY; %Num chromosome positions for y-lengths of the blocks
+            chromNCX;
+            chromNCY;
             %chromNSU8thickness; %thickness of the SU8 interference layer
             %thicknessMax; %Maximum value of chromosome thickness  %um
             spacingMin; %Minimum width of each block %um
@@ -33,6 +35,8 @@ classdef GratingGridHexagonalKnownHelix
             G.chromNspacingX = options.chromNspacingX;
             G.chromNspacingY = options.chromNspacingY;
             G.chromNcellArr = G.NblockX * G.NblockY;
+            G.chromNCX = 8;
+            G.chromNCY = 8;
             
             G.period = options.periodicity;   
             
@@ -70,8 +74,10 @@ classdef GratingGridHexagonalKnownHelix
             
 %             [spacingXchrom, spacingYchrom, cellArrChrom ] = splitChromosome(chromosomeSection,  ...
 %                 [G.chromNspacingX*(G.NblockX-1), G.chromNspacingY*(G.NblockX-1), G.chromNcellArr]);
-            [spacingXchrom, spacingYchrom ] = splitChromosome(chromosomeSection,  ...
-                [G.chromNspacingX*(G.NblockX-1), G.chromNspacingY*(G.NblockX)]);
+%             [spacingXchrom, spacingYchrom ] = splitChromosome(chromosomeSection,  ...
+%                 [G.chromNspacingX*(G.NblockX-1), G.chromNspacingY*(G.NblockX)]);
+            [spacingXchrom, spacingYchrom, CXchrom, CYchrom ] = splitChromosome(chromosomeSection,  ...
+                [G.chromNspacingX*(G.NblockX-1), G.chromNspacingY*(G.NblockX), 4*G.chromNCX, 4*G.chromNCY]);
             
             cellArrChrom = [1,0;1,0;1,0;1,0]; %for typical helix pattern
             
@@ -97,19 +103,22 @@ classdef GratingGridHexagonalKnownHelix
             spacingXfrac = convertChrom_gc( spacingXchrom, ones(1,A-1)*G.chromNspacingX) ;  %Converts the chromosome data into an array of fractions 
             %spacingYfrac = convertChrom_gc( spacingYchrom, ones(1,B-1)*G.chromNspacingY) ;
             spacingYfrac = convertChrom_gc( spacingYchrom, ones(1,A)*G.chromNspacingY) ;
+            CXfrac = convertChrom_gc(CXchrom, ones(1,4)*G.chromNCX);  %Used for chamfers and bevels
+            CYfrac = convertChrom_gc(CYchrom, ones(1,4)*G.chromNCY);
+            
             
             %Base values (will give previously used helix pattern)
             spacingXbase = [0.22185;0.2851;0.5];
             spacingYbase = [0.6391;0.6391;0.2717;0.2717];
             
-            spacingXmodMin = 0.9;
-            spacingXmodMax = 1.1;
-            spacingYmodMin = 0.9;
-            spacingYmodMax = 1.1;
-%             spacingXmodMin = 0.999;
-%             spacingXmodMax = 1.001;
-%             spacingYmodMin = 0.999;
-%             spacingYmodMax = 1.001;
+%             spacingXmodMin = 0.9;
+%             spacingXmodMax = 1.1;
+%             spacingYmodMin = 0.9;
+%             spacingYmodMax = 1.1;
+            spacingXmodMin = 0.999;
+            spacingXmodMax = 1.001;
+            spacingYmodMin = 0.999;
+            spacingYmodMax = 1.001;
             
             for ix = 1:size(spacingXbase,1)
                 spacingXfrac(ix) = spacingXfrac(ix)*(spacingXmodMax-spacingXmodMin) + spacingXmodMin
@@ -145,37 +154,64 @@ classdef GratingGridHexagonalKnownHelix
             
             %Converts chrom into map of blocks to raise
             %map = reshape(cellArrChrom,A,B);
-            map = cellArrChrom;
+            %map = cellArrChrom;
             
-            %Make grating
-            grating = G.constantGrating;
+            periodX = G.period
+            periodY = G.period*sqrt(3)/2
             
-            grating.stratum{1}.thick = 1; %thickness set by layer object
+            grating.W1 = spacingX(2)*periodX
+            grating.W2 = (spacingX(3)-spacingX(2)) * periodX
+            grating.W3 = (spacingX(4)-spacingX(3)) * periodX
+            grating.W4 = (spacingX(5)-spacingX(4)) * periodX
+            
+            grating.L1 = spacingY(1)*periodY
+            grating.L2 = spacingY(2)*periodY
+            grating.L3 = spacingY(3)*periodY
+            grating.L4 = spacingY(4)*periodY
+            
+            grating.CX1 = grating.W1*CXfrac(1)
+            grating.CX2 = grating.W2*CXfrac(2)
+            grating.CX3 = grating.W3*CXfrac(3)
+            grating.CX4 = grating.W4*CXfrac(4)
+            
+            grating.CY1 = (grating.L1-grating.L4)*CYfrac(1)
+            grating.CY2 = (grating.L2-grating.L3)*CYfrac(2)
+            grating.CY3 = (grating.L2-grating.L3-grating.CY2)*CYfrac(3)
+            grating.CY4 = (grating.L1-grating.L4-grating.CY1)*CYfrac(4)
             
             
-            for ix = 1:G.NblockX %stripes run along y-direction
-                grating.stratum{1}.stripe{ix}.type = 1;  %inhomogeneous stripe
-                %grating.stratum{1}.stripe{j}.c1 = spacingYfrac(j+1);  %width of stripe
-                grating.stratum{1}.stripe{ix}.c1 = spacingX(ix+1)
-                %blockNum = 1; %the order of the current block
-                for iy = 1:G.NblockY
-
-                    %Only create a block right before it switches, to enhance the calculation speed
-                    %if  (iy == G.NblockX) | (map(iy,ix) ~= map(iy+1,ix))
-                    if iy == 1
-                        grating.stratum{1}.stripe{ix}.block{iy}.c2 = spacingY(ix); %ending position of block
-                    elseif iy == 2
-                        grating.stratum{1}.stripe{ix}.block{iy}.c2 = 1;
-                    end
-                        if map(ix,iy) == 1
-                            grating.stratum{1}.stripe{ix}.block{iy}.pmt_index = G.pmtIndices.filled;
-                        else
-                            grating.stratum{1}.stripe{ix}.block{iy}.pmt_index = G.pmtIndices.void;
-                        end
-                        %blockNum = blockNum+1;
-                    %end
-                end
-            end
+            
+            %With more complex masks, can no longer rely on this grating
+            %model
+%             %Make grating
+%             grating = G.constantGrating;
+%             
+%             grating.stratum{1}.thick = 1; %thickness set by layer object
+%             
+%             
+%             for ix = 1:G.NblockX %stripes run along y-direction
+%                 grating.stratum{1}.stripe{ix}.type = 1;  %inhomogeneous stripe
+%                 %grating.stratum{1}.stripe{j}.c1 = spacingYfrac(j+1);  %width of stripe
+%                 grating.stratum{1}.stripe{ix}.c1 = spacingX(ix+1)
+%                 %blockNum = 1; %the order of the current block
+%                 for iy = 1:G.NblockY
+% 
+%                     %Only create a block right before it switches, to enhance the calculation speed
+%                     %if  (iy == G.NblockX) | (map(iy,ix) ~= map(iy+1,ix))
+%                     if iy == 1
+%                         grating.stratum{1}.stripe{ix}.block{iy}.c2 = spacingY(ix); %ending position of block
+%                     elseif iy == 2
+%                         grating.stratum{1}.stripe{ix}.block{iy}.c2 = 1;
+%                     end
+%                         if map(ix,iy) == 1
+%                             grating.stratum{1}.stripe{ix}.block{iy}.pmt_index = G.pmtIndices.filled;
+%                         else
+%                             grating.stratum{1}.stripe{ix}.block{iy}.pmt_index = G.pmtIndices.void;
+%                         end
+%                         %blockNum = blockNum+1;
+%                     %end
+%                 end
+%             end
             
             
 %             for j = 1:G.NblockY %stripes run along x-direction
@@ -209,7 +245,8 @@ classdef GratingGridHexagonalKnownHelix
         
         function chromosomeSize = getChromosomeSize(G)
             %chromosomeSize =  G.chromNspacingX*(G.NblockX-1) + G.chromNspacingY*(G.NblockY-1) + G.chromNcellArr;
-            chromosomeSize =  G.chromNspacingX*(G.NblockX-1) + G.chromNspacingY*(G.NblockX);
+            %chromosomeSize =  G.chromNspacingX*(G.NblockX-1) + G.chromNspacingY*(G.NblockX);
+            chromosomeSize =  G.chromNspacingX*(G.NblockX-1) + G.chromNspacingY*(G.NblockX) + G.chromNCX*4 + G.chromNCY*4;
         end
         
         
