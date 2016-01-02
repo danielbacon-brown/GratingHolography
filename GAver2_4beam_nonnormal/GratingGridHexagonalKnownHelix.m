@@ -111,14 +111,14 @@ classdef GratingGridHexagonalKnownHelix
             spacingXbase = [0.22185;0.2851;0.5];
             spacingYbase = [0.6391;0.6391;0.2717;0.2717];
             
-%             spacingXmodMin = 0.9;
-%             spacingXmodMax = 1.1;
-%             spacingYmodMin = 0.9;
-%             spacingYmodMax = 1.1;
-            spacingXmodMin = 0.999;
-            spacingXmodMax = 1.001;
-            spacingYmodMin = 0.999;
-            spacingYmodMax = 1.001;
+            spacingXmodMin = 0.9;
+            spacingXmodMax = 1.1;
+            spacingYmodMin = 0.9;
+            spacingYmodMax = 1.1;
+%             spacingXmodMin = 0.999;
+%             spacingXmodMax = 1.001;
+%             spacingYmodMin = 0.999;
+%             spacingYmodMax = 1.001;
             
             for ix = 1:size(spacingXbase,1)
                 spacingXfrac(ix) = spacingXfrac(ix)*(spacingXmodMax-spacingXmodMin) + spacingXmodMin
