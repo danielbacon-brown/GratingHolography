@@ -396,9 +396,15 @@ GAoptions.hostname = strtrim(hostname);
     end
     
     %%%%% Do sensitizer simulation %%%%%
-    sensSim.sensDens = 8290000 *4; %Density of sensitizer molecules per um^3
+    sensSim.sensDens = 8290000 *10; %Density of sensitizer molecules per um^3
     %abs_prob_per_photon = 2.91e-7; %nm^2/molecule %BCPI %based on 5-9-15 UV-vis measurements 
     sensSim.absCrossSection = 2.91e-7; %nm^2/molecule %BCPI  %MAY NEED TO UPDATE
+    
+    %sensSim.QYtimesAbsCrossSection = 8.35e-7; %nm^2/molecule %BCPI %1/21/16
+    %1/26/16:   absCrossSection*QY = lambda*Ephoton/I = 1/210 s^-1 * 3.72e-19
+    %J / 0.0029W/mm^2  = 6.108e-19 mm^2 = 6.108e-7 nm^2
+    sensSim.QYtimesAbsCrossSection = 6.108e-7; %nm^2/molecule %BCPI
+    
     sensSim.Texposure = 200; %s
     GAoptions.sensSim = sensSim;
     
@@ -491,7 +497,7 @@ fitness = fitnessFunction_8beamVarLayers(GAoptions,chromosome) %Should also work
 %%%%% Declaration of Fitness Function %%%%%
     function fitness = gfit(chromosome)  %This is done so that it can pass GAoptions to the fitness function.
         %tic
-        fitness = fitnessFunction_8beamVarLayers(GAoptions,chromosome);
+        fitness = fitnessFunction_8beamVarLayers_litmodel(GAoptions,chromosome);
         %toc 
     end
 

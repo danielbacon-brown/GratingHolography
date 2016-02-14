@@ -65,7 +65,11 @@ classdef IncidentLightGeneral %< IncidentLightGenerator
             end
             
             %L.Pdens = options.beamPowerDens * options.period*options.period*1e-12; %W/m^2 * (um*um) * (m^2/um^2) %Gives power going through a unit cell (if normal) 
-            L.Pdens = options.beamPowerDens * unitCellArea; %Gives power going through a unit cell (if normal) 
+            %L.Pdens = options.beamPowerDens * unitCellArea; %Gives power going through a unit cell (if normal) 
+            %Since linear and unit cell area is unchanged, we can avoid
+            %normalizing by unit cell area:
+            L.Pdens = options.beamPowerDens;  %W/m^2
+            
             
             L.eps_0 = 8.854e-12; %F/m
             L.c = 2.99e8; %m/s
@@ -87,11 +91,15 @@ classdef IncidentLightGeneral %< IncidentLightGenerator
             
             
             
+%             fieldParameters.Esp = [cos(psi)*cos(chi)-1i*sin(psi)*sin(chi); ...  %Calculate incident Field E-vector
+%                 sin(psi)*cos(chi)+1i*cos(psi)*sin(chi)] .* sqrt(2*L.Pdens/(L.n_incidence*L.eps_0*L.c) ); %/ cos(fieldParameters.phi) ); %Units of V/sqrt(unit-area)
+%                 %Pdens is in units of W/unit-cell-area
+            %Avoiding normalizing by beam power density:
             fieldParameters.Esp = [cos(psi)*cos(chi)-1i*sin(psi)*sin(chi); ...  %Calculate incident Field E-vector
-                sin(psi)*cos(chi)+1i*cos(psi)*sin(chi)] .* sqrt(2*L.Pdens/(L.n_incidence*L.eps_0*L.c) ); %/ cos(fieldParameters.phi) ); %Should be units of V/sqrt(unit-area)
-            
-            
-            
+                sin(psi)*cos(chi)+1i*cos(psi)*sin(chi)] .* sqrt(2*L.Pdens/(L.n_incidence*L.eps_0*L.c) ); %/ cos(fieldParameters.phi) ); %Units of V/sqrt(unit-area)
+                %Pdens is in units of W/m^2
+                %Esp is in units of V/m
+                
             
        end
 
@@ -126,6 +134,8 @@ classdef IncidentLightGeneral %< IncidentLightGenerator
            Es = Esp(1) 
            Ep = Esp(2) 
                     
+           normVal = sqrt(abs(Es)^2+abs(Ep)^2);   %Used for normalization for large/small values of Es,Ep
+           
            t = linspace(0,2*pi,1000); %timesteps
            omega = 1; %relative wavenumber %value is unimportant
            
@@ -135,11 +145,11 @@ classdef IncidentLightGeneral %< IncidentLightGenerator
            %plot
            figure
            plot(real(ses),real(pes))
-           xlim([-1,1])
-           ylim([-1,1])
+           xlim([-normVal,normVal])
+           ylim([-normVal,normVal])
            axis square
-           set(gca,'XTick',[-1,1])
-           set(gca,'YTick',[-1,1])
+%            set(gca,'XTick',[-1,1])
+%            set(gca,'YTick',[-1,1])
        end
        
        

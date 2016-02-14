@@ -111,14 +111,14 @@ classdef GratingGridHexagonalKnownHelix
             spacingXbase = [0.22185;0.2851;0.5];
             spacingYbase = [0.6391;0.6391;0.2717;0.2717];
             
-            spacingXmodMin = 0.9;
-            spacingXmodMax = 1.1;
-            spacingYmodMin = 0.9;
-            spacingYmodMax = 1.1;
-%             spacingXmodMin = 0.999;
-%             spacingXmodMax = 1.001;
-%             spacingYmodMin = 0.999;
-%             spacingYmodMax = 1.001;
+%             spacingXmodMin = 0.9;
+%             spacingXmodMax = 1.1;
+%             spacingYmodMin = 0.9;
+%             spacingYmodMax = 1.1;
+            spacingXmodMin = 0.999;
+            spacingXmodMax = 1.001;
+            spacingYmodMin = 0.999;
+            spacingYmodMax = 1.001;
             
             for ix = 1:size(spacingXbase,1)
                 spacingXfrac(ix) = spacingXfrac(ix)*(spacingXmodMax-spacingXmodMin) + spacingXmodMin
@@ -159,24 +159,24 @@ classdef GratingGridHexagonalKnownHelix
             periodX = G.period
             periodY = G.period*sqrt(3)/2
             
-            grating.W1 = spacingX(2)*periodX
-            grating.W2 = (spacingX(3)-spacingX(2)) * periodX
-            grating.W3 = (spacingX(4)-spacingX(3)) * periodX
-            grating.W4 = (spacingX(5)-spacingX(4)) * periodX
+            grating.W1 = spacingX(2)*periodX;
+            grating.W2 = (spacingX(3)-spacingX(2)) * periodX;
+            grating.W3 = (spacingX(4)-spacingX(3)) * periodX;
+            grating.W4 = (spacingX(5)-spacingX(4)) * periodX;
             
-            grating.L1 = spacingY(1)*periodY
-            grating.L2 = spacingY(2)*periodY
-            grating.L3 = spacingY(3)*periodY
-            grating.L4 = spacingY(4)*periodY
+            grating.L1 = spacingY(1)*periodY;
+            grating.L2 = spacingY(2)*periodY;
+            grating.L3 = spacingY(3)*periodY;
+            grating.L4 = spacingY(4)*periodY;
             
-            grating.CX1 = grating.W1*CXfrac(1)
-            grating.CX2 = grating.W2*CXfrac(2)
-            grating.CX3 = grating.W3*CXfrac(3)
-            grating.CX4 = grating.W4*CXfrac(4)
+            grating.CX1 = grating.W1*CXfrac(1);
+            grating.CX2 = grating.W2*CXfrac(2);
+            grating.CX3 = grating.W3*CXfrac(3);
+            grating.CX4 = grating.W4*CXfrac(4);
             
-            grating.CY1 = (grating.L1-grating.L4)*CYfrac(1)
-            grating.CY2 = (grating.L2-grating.L3)*CYfrac(2)
-            grating.CY3 = (grating.L2-grating.L3-grating.CY2)*CYfrac(3)
+            grating.CY1 = (grating.L1-grating.L4)*CYfrac(1);
+            grating.CY2 = (grating.L2-grating.L3)*CYfrac(2);
+            grating.CY3 = (grating.L2-grating.L3-grating.CY2)*CYfrac(3);
             grating.CY4 = (grating.L1-grating.L4-grating.CY1)*CYfrac(4)
             
             

@@ -171,86 +171,93 @@ classdef S4interfaceSquareGeneral
             Ey = A(:,6) + 1i*A(:,7);
             Ez = A(:,8) + 1i*A(:,9);
             I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez)) * S.c*S.n_interference*S.eps_0/2;
+%             if strcmp(GAoptions.lattice,'square')
+%                 unitCellArea = GAoptions.period*GAoptions.period*1e-12;  %m^2
+%             elseif strcmp(GAoptions.lattice,'hexagonal')
+%                 unitCellArea = GAoptions.period*GAoptions.period*sqrt(3)/2*1e-12; %m^2
+%             end
+%             I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez)) * S.c*S.n_interference*S.eps_0/2 * unitCellArea;  %Need to multiply by unit cell area in m^2 to get I in W/m^2
+%Avoiding scaling by unit cell area, E is in V/m, so I is in W/m^2
             I = reshape(I_linear, S.cells(2),S.cells(1),[]);
             intensityDist = permute(I,[2,1,3]);
             
             
         end
-        
-        %This adds an arbitrary field to the interference pattern
-        function intensityDist = doRCWA_ExtraField(S,GAoptions,grating,incidentFieldParams,layerChromosomes,materialChromosomes,extraFieldParam)
-            
-            %Use worker ID to different files intended for different
-            %workers
-            %t = getCurrentTask();
-            %disp(['Task# = ', t.ID])
-            
-            %Since getCurrentTask fails, generate a random integer that
-            %will be the file ID -> very low chance of attempting
-            %simultaneous file-writes.
-            t = num2str(randi(intmax()));
-            
-            if ~isempty(t)
-                dataFilename = sprintf( 'fieldData_%s', t );
-                scriptFilename = sprintf( 'automatedS4script_%s.lua', t );
-            else
-                dataFilename = 'fieldData';
-                scriptFilename = 'automatedS4script.lua';
-            end
-            makeRunScript(S,GAoptions,grating,incidentFieldParams, dataFilename,scriptFilename,layerChromosomes,materialChromosomes); %Make script
-            
-            if strcmp(GAoptions.hostname,'Daniel-netbook')
-                system(['C:/Users/daniel/S4-1.1.1-win32/S4 ', GAoptions.dir,scriptFilename]); %Run script
-            elseif strcmp(GAoptions.hostname,'berzerk')
-                message = ['running: ', '~/S4/build/S4 ', GAoptions.dir,scriptFilename];
-                system(['~/S4/build/S4 ', GAoptions.dir,scriptFilename]);
-            end
-            disp(['importing data: ', GAoptions.dir,dataFilename,'.E'])
-            if ~exist([GAoptions.dir,dataFilename,'.E'],'file') %If you can't find the file, ignore it and move on
-                intensityDist = [];
-                return;
-            end
-            A = importdata([GAoptions.dir,dataFilename,'.E']); %Load data from script
-            delete([GAoptions.dir,dataFilename,'.E']); %Clear data file for reuse
-            delete([GAoptions.dir,dataFilename,'.H']);
-delete([scriptFilename]);
-            
-            if size(A,2)<9 %If data is full of NaN, skip it and move on
-                intensityDist = [];
-                return;
-            end
-
-%FINISH
-            if strcmp(GAoptions.lattice,'square')
-                %Create a 3d position matrix
-                ticksX = linspace(0,S.dimensions(1)*(S.cells(1)-1)/S.cells(1), S.cells(1)); %um
-                ticksY = linspace(0,S.dimensions(2)*(S.cells(2)-1)/S.cells(1), S.cells(1));
-                ticksZ = linspace(0,S.dimensions(3)*(S.cells(3)-1)/S.cells(1), S.cells(1));
-                [coorX,coorY,coorZ] = ndgrid(ticksX,ticksY,ticksZ);
-                
-                eikr_a = zeros(S.cells(1),S.cells(2),S.cells(3),8,8);
-                
-                for i_i = 1:7  %For each combination of vectors
-                    for i_j = 1:7
-                        eikr_x = exp(1i.*( k(1,i_i) - k(1,i_j) ).*coorX );  %exp(i*(k_ix-k_jx)*r_x)
-                        eikr_y = exp(1i.*( k(2,i_i) - k(2,i_j) ).*coorY );
-                        eikr_z = exp(1i.*( k(3,i_i) - k(3,i_j) ).*coorZ );
-                        eikr_a(:,:,:,i_i,i_j) = eikr_x.*eikr_y.*eikr_z;   %exp(i*(k_i-k_z)*r)
-
-                    end
-                end
-                
-            end
-            
-            Ex = A(:,4) + 1i*A(:,5);
-            Ey = A(:,6) + 1i*A(:,7);
-            Ez = A(:,8) + 1i*A(:,9);
-            I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez)) * S.c*S.n_interference*S.eps_0/2;
-            I = reshape(I_linear, S.cells(2),S.cells(1),[]);
-            intensityDist = permute(I,[2,1,3]);
-            
-            
-        end
+%         
+%         %This adds an arbitrary field to the interference pattern
+%         function intensityDist = doRCWA_ExtraField(S,GAoptions,grating,incidentFieldParams,layerChromosomes,materialChromosomes,extraFieldParam)
+%             
+%             %Use worker ID to different files intended for different
+%             %workers
+%             %t = getCurrentTask();
+%             %disp(['Task# = ', t.ID])
+%             
+%             %Since getCurrentTask fails, generate a random integer that
+%             %will be the file ID -> very low chance of attempting
+%             %simultaneous file-writes.
+%             t = num2str(randi(intmax()));
+%             
+%             if ~isempty(t)
+%                 dataFilename = sprintf( 'fieldData_%s', t );
+%                 scriptFilename = sprintf( 'automatedS4script_%s.lua', t );
+%             else
+%                 dataFilename = 'fieldData';
+%                 scriptFilename = 'automatedS4script.lua';
+%             end
+%             makeRunScript(S,GAoptions,grating,incidentFieldParams, dataFilename,scriptFilename,layerChromosomes,materialChromosomes); %Make script
+%             
+%             if strcmp(GAoptions.hostname,'Daniel-netbook')
+%                 system(['C:/Users/daniel/S4-1.1.1-win32/S4 ', GAoptions.dir,scriptFilename]); %Run script
+%             elseif strcmp(GAoptions.hostname,'berzerk')
+%                 message = ['running: ', '~/S4/build/S4 ', GAoptions.dir,scriptFilename];
+%                 system(['~/S4/build/S4 ', GAoptions.dir,scriptFilename]);
+%             end
+%             disp(['importing data: ', GAoptions.dir,dataFilename,'.E'])
+%             if ~exist([GAoptions.dir,dataFilename,'.E'],'file') %If you can't find the file, ignore it and move on
+%                 intensityDist = [];
+%                 return;
+%             end
+%             A = importdata([GAoptions.dir,dataFilename,'.E']); %Load data from script
+%             delete([GAoptions.dir,dataFilename,'.E']); %Clear data file for reuse
+%             delete([GAoptions.dir,dataFilename,'.H']);
+% delete([scriptFilename]);
+%             
+%             if size(A,2)<9 %If data is full of NaN, skip it and move on
+%                 intensityDist = [];
+%                 return;
+%             end
+% 
+% %FINISH
+%             if strcmp(GAoptions.lattice,'square')
+%                 %Create a 3d position matrix
+%                 ticksX = linspace(0,S.dimensions(1)*(S.cells(1)-1)/S.cells(1), S.cells(1)); %um
+%                 ticksY = linspace(0,S.dimensions(2)*(S.cells(2)-1)/S.cells(1), S.cells(1));
+%                 ticksZ = linspace(0,S.dimensions(3)*(S.cells(3)-1)/S.cells(1), S.cells(1));
+%                 [coorX,coorY,coorZ] = ndgrid(ticksX,ticksY,ticksZ);
+%                 
+%                 eikr_a = zeros(S.cells(1),S.cells(2),S.cells(3),8,8);
+%                 
+%                 for i_i = 1:7  %For each combination of vectors
+%                     for i_j = 1:7
+%                         eikr_x = exp(1i.*( k(1,i_i) - k(1,i_j) ).*coorX );  %exp(i*(k_ix-k_jx)*r_x)
+%                         eikr_y = exp(1i.*( k(2,i_i) - k(2,i_j) ).*coorY );
+%                         eikr_z = exp(1i.*( k(3,i_i) - k(3,i_j) ).*coorZ );
+%                         eikr_a(:,:,:,i_i,i_j) = eikr_x.*eikr_y.*eikr_z;   %exp(i*(k_i-k_z)*r)
+% 
+%                     end
+%                 end
+%                 
+%             end
+%             
+%             Ex = A(:,4) + 1i*A(:,5);
+%             Ey = A(:,6) + 1i*A(:,7);
+%             Ez = A(:,8) + 1i*A(:,9);
+%             I_linear = (Ex.*conj(Ex) + Ey.*conj(Ey) + Ez.*conj(Ez)) * S.c*S.n_interference*S.eps_0/2;
+%             I = reshape(I_linear, S.cells(2),S.cells(1),[]);
+%             intensityDist = permute(I,[2,1,3]);
+%             
+%             
+%         end
         
         
         function makeRunScript(S,GAoptions,grating,incidentFieldParams,dataFilename,scriptFilename,layerChromosomes,materialChromosomes)
@@ -376,15 +383,15 @@ delete([scriptFilename]);
             end
 
 
-% %TEST
-% grating.CX1 = 0            
-% grating.CX2 = 0
-% grating.CX3 = 0
-% grating.CX4 = 0
-% grating.CY1 = 0
-% grating.CY2 = 0
-% grating.CY3 = 0
-% grating.CY4 = 0
+%TEST
+grating.CX1 = 0            
+grating.CX2 = 0
+grating.CX3 = 0
+grating.CX4 = 0
+grating.CY1 = 0
+grating.CY2 = 0
+grating.CY3 = 0
+grating.CY4 = 0
 
 
 %Need to define the grating as a polygon
@@ -428,7 +435,7 @@ Ep = 293.7
                 ];
             %For visualizing the grating
             displayScript = ['S:OutputStructurePOVRay(''HelixPOVrayScript.pov'') \r\n'];
-            displayScript = [displayScript,'S:OutputLayerPatternDescription(''Grating'',''patternDescription'') \r\n'];
+            displayScript = [displayScript,'S:OutputLayerPatternDescription(''Grating'',''patternDescription.ps'') \r\n'];
             displayScript = [displayScript,'S:OutputLayerPatternRealization(''Grating'',25,25,''patternRealization'') \r\n'];
             
             

@@ -1,6 +1,10 @@
-function acidCount = excitePAG(intensityDist,dimensions,sensDens,absCrossSection, t_exposure)
+%function acidCount = excitePAG(intensityDist,dimensions,sensDens,absCrossSection, t_exposure)
+function acidCount = excitePAG(intensityDist,dimensions,sensDens,QYtimesAbsCrossSection, t_exposure)
+
+plotHeatMaps = 0;
+
 %Returns the number of excited PAG in each cell
-%intensityDist: based off of power of 1/area using S4's units
+%intensityDist: W/m^2
 %sensDens: scalar density of the PAG in molecules/um^3
 %dimensions: [x,y,z] in microns
 %absCrossSection: scalar in 1/nm^2
@@ -17,7 +21,7 @@ n = 1.58; %refractive index of SU8
 q = 1.6e-19; %Coulombs % fundamental charge
 h = 6.626e-34; %Planck's constant %J*s
 
-quantum_efficiency = 0.07; %Fraction of absorbed photons leading to 
+%quantum_efficiency = 0.07; %Fraction of absorbed photons leading to 
 %t_exposure = 100;
 E_photon = h*c/(0.532e-6); %J   (=2.33eV) %532nm
 
@@ -54,6 +58,15 @@ maxSenscount = max(max(max(sensCount)))
 minSensCount = min(min(min(sensCount)))
 sensSum = sum(sum(sum(sensCount))) %Should match moleculesPerUnit
 
+%PLOT HEATMAP:
+if plotHeatMaps == 1
+    figure
+    colormap(hot)
+    imagesc(sensCount(:,:,20), [0,max(max(sensCount(:,:,20)))])
+    colorbar
+end
+
+
 %Calculate the real electric field
 %  S4 gives electric field in units of V/sqrt(A), assuming incident beam power of 1
 %  W/A, where A is the area of the unit cell (S4 later divides this power by
@@ -67,7 +80,9 @@ sensSum = sum(sum(sum(sensCount))) %Should match moleculesPerUnit
 
 %%% E is in units of V/sqrt(A), so intensityDist is given in W/A
 %intensityDist_r = I_r_over_I_s*intensityDist;  %Calc real interference intensity %W/m^2
-intensityDist_r = intensityDist/(dimensions(1)*dimensions(2))  * 1e12;  %W/A * (1A/um^2) * (um^2/m^2) => W/m^2
+%intensityDist_r = intensityDist/(dimensions(1)*dimensions(2))  * 1e12;  %W/A * (1A/um^2) * (um^2/m^2) => W/m^2
+%Actually avoiding normalization by unit cell area
+intensityDist_r = intensityDist;
 INrmax = max(max(max(intensityDist_r)))
 INrmin = min(min(min(intensityDist_r)))
 
@@ -75,7 +90,8 @@ flux_photon = intensityDist_r*t_exposure/E_photon/1e18;   %Distribution of photo
 pfmax = max(max(max(flux_photon)))
 pfmin = min(min(min(flux_photon)))
 
-prob_abs = 1 - exp(-absCrossSection.*quantum_efficiency.*flux_photon); %Probability at least one photon is absorbed at each point   %nm^2/molecule * 1 * #photons/nm^2
+%prob_abs = 1 - exp(-absCrossSection.*quantum_efficiency.*flux_photon); %Probability at least one photon is absorbed at each point   %nm^2/molecule * 1 * #photons/nm^2
+prob_abs = 1 - exp(-QYtimesAbsCrossSection.*flux_photon);    % ~8e-7nm^2  * #photons/nm^2 -> unitless
 PAmax = max(max(max(prob_abs)))
 PAmin = min(min(min(prob_abs)))
 
@@ -96,6 +112,18 @@ percent_excited = sum(sum(sum(acidCount))) / sum(sum(sum(sensCount)))
     %Plot histogram of intensities
     figure
     hist(reshape(intensityDist_r,1,[]),100)
+    
+    
+    %PLOT HEATMAP:
+    if plotHeatMaps == 1
+        figure
+        colormap(hot)
+        imagesc(acidCount(:,:,20), [0,max(max(acidCount(:,:,20)))])
+        colorbar
+    end
+    
+    
+    
 
 
 end

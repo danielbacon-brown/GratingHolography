@@ -22,6 +22,7 @@ Zq = zeros(NxCart,NyCart,NzCart);
 cs = linspace(0,1,NzCart+1);  %Take each dimension of unit cell to be 1 (Nx+1 ticks for Nx lengths)
 bs = linspace(0,1,NyCart+1);  
 as = linspace(0,1,NxCart+1);
+%Figure out coordinates of each query point in the UV coordinate system:
 for c_i = 1:NzCart  
     for b_i = 1:NyCart
         for a_i = 1:NxCart
@@ -58,26 +59,35 @@ for c_i = 1:NzCart
     end
 end
 
-%Xqout = size(Xq)
-%Yqout = size(Yq)
-%Zqout = size(Zq)
+
 
 Xqr = reshape(Xq,[],1);
 Yqr = reshape(Yq,[],1);
 Zqr = reshape(Zq,[],1);
 
-%figure
-%scatter3(Xqr,Yqr,Zqr)
 
 Xvec = linspace(0,1,NxUV);
 Yvec = linspace(0,1,NyUV);
 Zvec = linspace(0,1,NzUV);
-%[Xgrid,Ygrid,Zgrid] = meshgrid(Xvec,Yvec,Zvec);
-%Need to shift Xgrid values up so that is it half shifted by 
-Icartlin = interp3(Xvec,Yvec,Zvec,double(Ihex),double(Xq),double(Yq),double(Zq)); %interpolates points
+
+
+
+%REPLICATE INPUT DATA TO MAKE BETTER INTERPOLATION AT PERIODICITY
+IhexRep = repmat(Ihex,[3,3,3]);
+XvecRep = linspace(-1,2,NxUV*3);
+YvecRep = linspace(-1,2,NyUV*3);
+ZvecRep = linspace(-1,2,NzUV*3);
+Icartlin = interp3(XvecRep,YvecRep,ZvecRep,double(IhexRep),double(Xq),double(Yq),double(Zq)); %interpolates points
 Icart = reshape(Icartlin,NxCart,NyCart,NzCart);
 Icart = permute(Icart,[2,1,3]);
-%sizeIcart = size(Icart)
+
+
+
+% %Need to shift Xgrid values up so that is it half shifted by 
+% Icartlin = interp3(Xvec,Yvec,Zvec,double(Ihex),double(Xq),double(Yq),double(Zq)); %interpolates points
+% Icart = reshape(Icartlin,NxCart,NyCart,NzCart);
+% Icart = permute(Icart,[2,1,3]);
+% %sizeIcart = size(Icart)
 
 
 %plotVolume(Icart,0.5);

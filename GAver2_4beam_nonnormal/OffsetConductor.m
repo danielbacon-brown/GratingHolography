@@ -27,11 +27,24 @@ classdef OffsetConductor
             [offset_x, offset_y, offset_z] = convertChrom_gc(offsetChromosome,[O.chromNoffsetX,O.chromNoffsetY,O.chromNoffsetZ]); %Returns offsets as fractions of unit cell
             %shift remaining cells to fill in the missing space)
             offset_x = floor( offset_x*O.cells(1) ); %discrete number of cells to offset
+            
+%TEST
+%            offset_x = offset_x + 5
+
+            
             rem_x = O.cells(1) - offset_x;  %remaining cells that need to be shifted down
             offset_y = floor( offset_y*O.cells(2) );
+ %TEST
+ %                       offset_y = offset_y + 5
+            
+            
             rem_y = O.cells(2) - offset_y;
             offset_z = floor( offset_z*O.cells(3) );
             rem_z = O.cells(3) - offset_z;
+            
+            
+
+            
             
             
             switch O.offsetType
