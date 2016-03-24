@@ -3,7 +3,7 @@ function fitness = fitnessFunction_8beamVarLayers(GAoptions,chromosome)
 %Use in a separate file allows the chromosome to be measured directly
 
 plotHeatMaps = 0;
-twoPhoton = 1;
+twoPhoton = 0;
 colormap(hot)
 
 
@@ -466,7 +466,7 @@ if GAoptions.runSingle == 1 %Plot simulated structure
     %FOR RANDOM WALK DIFFUSION:
     %numRandWalkSteps = 90    %for 1x
     numRandWalkSteps = 9  %for 10x
-    
+    numRandWalkSteps = 1
     
     
 

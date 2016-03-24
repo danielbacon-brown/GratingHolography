@@ -7,8 +7,10 @@ plotHeatMaps = 0;
 %intensityDist: W/m^2
 %sensDens: scalar density of the PAG in molecules/um^3
 %dimensions: [x,y,z] in microns
-%absCrossSection: scalar in 1/nm^2
+%%%%absCrossSection: scalar in 1/nm^2
 %beamPowerDens: power of the laser (W/m^2)
+%QYtimesAbsorptionCrossSection: m^2
+
 
 INmax = max(max(max(intensityDist)))
 INmin = min(min(min(intensityDist)))
@@ -27,7 +29,7 @@ E_photon = h*c/(0.532e-6); %J   (=2.33eV) %532nm
 
 %%% First figure out a random distribution of PAG:
 vol_unit = dimensions(1)*dimensions(2)*dimensions(3); %um^3
-moleculesPerUnit = sensDens*vol_unit %molecules/unit cell
+moleculesPerUnit = sensDens*vol_unit %molecules/unit cell   %sensdens in molecules/um^3
 
 cells = size(intensityDist);
 
@@ -86,12 +88,13 @@ intensityDist_r = intensityDist;
 INrmax = max(max(max(intensityDist_r)))
 INrmin = min(min(min(intensityDist_r)))
 
-flux_photon = intensityDist_r*t_exposure/E_photon/1e18;   %Distribution of photons at each points %#photons/nm^2        %W/m^2 * s / (J/photon) * (nm/m)^2
-pfmax = max(max(max(flux_photon)))
-pfmin = min(min(min(flux_photon)))
+%flux_photon = intensityDist_r*t_exposure/E_photon/1e18;   %Distribution of photons at each points %#photons/nm^2        %W/m^2 * s / (J/photon) * (nm/m)^2
+%pfmax = max(max(max(flux_photon)))
+%pfmin = min(min(min(flux_photon)))
 
 %prob_abs = 1 - exp(-absCrossSection.*quantum_efficiency.*flux_photon); %Probability at least one photon is absorbed at each point   %nm^2/molecule * 1 * #photons/nm^2
-prob_abs = 1 - exp(-QYtimesAbsCrossSection.*flux_photon);    % ~8e-7nm^2  * #photons/nm^2 -> unitless
+%prob_abs = 1 - exp(-QYtimesAbsCrossSection.*flux_photon);    % ~8e-7nm^2  * #photons/nm^2 -> unitless
+prob_abs = 1 - exp(-QYtimesAbsCrossSection.*intensityDist_r.*t_exposure./E_photon);    % m^2/molecule  * #W/m^2 * s / J ->  1/molecules
 PAmax = max(max(max(prob_abs)))
 PAmin = min(min(min(prob_abs)))
 

@@ -416,9 +416,13 @@ setLayerScript = [setLayerScript, 'S:SetLayerPatternPolygon(''Grating'', ''SU8''
             Es = incidentFieldParams.Esp(2,1);
             Ep = incidentFieldParams.Esp(1,1);
             
-%%%%%%TEST%%%%%%%            
-Es = 3150.2
-Ep = 293.7
+%%%%%%TEST%%%%%%% 
+%Sets to right polarization, but scales according to incident beam power
+Emag = sqrt(abs(Es)^2 + abs(Ep)^2);
+%Es = 3150.2
+%Ep = 293.7
+Es = 3150.2/sqrt(3150.2^2+293.7^2)*Emag;
+Ep = 293.7/sqrt(3150.2^2+293.7^2)*Emag;
 
             
             %Set the output data filename variable to be used in cs2

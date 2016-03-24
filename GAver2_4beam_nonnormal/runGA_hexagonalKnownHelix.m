@@ -193,7 +193,7 @@ GAoptions.hostname = strtrim(hostname);
     incidentLightOptions.n_incidence = GAoptions.n_front; %The refractive index of the material that the plane wave is in
     incidentLightOptions.period = GAoptions.period;
     incidentLightOptions.C_over_A = GAoptions.C_over_A;
-    incidentLightOptions.beamPowerDens = 20935  %W/m^2      %=20935W/m^2
+    incidentLightOptions.beamPowerDens = 1150  %W/m^2      %=20935W/m^2
     GAoptions.incidentLightOptions = incidentLightOptions;
     %GAoptions.incidentLightFunction = IncidentLightAngled(incidentLightOptions);
     GAoptions.incidentLightFunction = IncidentLightGeneral(incidentLightOptions);
@@ -398,14 +398,15 @@ GAoptions.hostname = strtrim(hostname);
     %%%%% Do sensitizer simulation %%%%%
     sensSim.sensDens = 8290000 *10; %Density of sensitizer molecules per um^3
     %abs_prob_per_photon = 2.91e-7; %nm^2/molecule %BCPI %based on 5-9-15 UV-vis measurements 
-    sensSim.absCrossSection = 2.91e-7; %nm^2/molecule %BCPI  %MAY NEED TO UPDATE
+    %sensSim.absCrossSection = 2.91e-7; %nm^2/molecule %BCPI  %MAY NEED TO UPDATE
     
     %sensSim.QYtimesAbsCrossSection = 8.35e-7; %nm^2/molecule %BCPI %1/21/16
+    sensSim.QYtimesAbsCrossSection = 5.967e-14;  %m^2/molecule %BCPI %1/26/16
     %1/26/16:   absCrossSection*QY = lambda*Ephoton/I = 1/210 s^-1 * 3.72e-19
     %J / 0.0029W/mm^2  = 6.108e-19 mm^2 = 6.108e-7 nm^2
-    sensSim.QYtimesAbsCrossSection = 6.108e-7; %nm^2/molecule %BCPI
+    %sensSim.QYtimesAbsCrossSection = 6.108e-7; %nm^2/molecule %BCPI
     
-    sensSim.Texposure = 200; %s
+    sensSim.Texposure = 500; %s
     GAoptions.sensSim = sensSim;
     
     
