@@ -51,15 +51,16 @@ classdef OffsetConductor
                     
                     %offsetY:
                     tempVol1 = matrixIn( 1:floor(end/2), 1:offset_y, :); %bottom left corner
-                    tempVol2 = matrixIn( floor(end/2)+1:end, 1:offset_y, :); % bottom right corner
+                    tempVol2 = matrixIn( (floor(end/2)+1):end, 1:offset_y, :); % bottom right corner
+                    size(tempVol1)
+                    size(tempVol2)
+                    matrixIn(:, 1:rem_y, :) = matrixIn(:, (offset_y+1):end, :); %shift bottom section over
+                    size( matrixIn( 1:floor(end/2), (rem_y+1):end, :) )
+                    matrixIn( 1:floor(end/2), (rem_y+1):end, :) = tempVol2; % top left corner
+                    matrixIn( (floor(end/2)+1):end, (rem_y+1):end, :) = tempVol1; %top right corner
                     
-                    matrixIn(:, 1:rem_y, :) = matrixIn(:, offset_y+1:end, :); %shift bottom section over
                     
-                    matrixIn( 1:floor(end/2), rem_y+1:end, :) = tempVol2; % top left corner
-                    matrixIn( floor(end/2)+1:end, rem_y+1:end, :) = tempVol1; %top right corner
-                    
-                    
-%IF simply periodic in y                                        
+% %IF simply periodic in y                                        
 %                     %offsetY
 %                     tempVol = matrixIn( :,1:offset_y,:);  %left section to be moved to right end
 %                     matrixIn(:,1:rem_y,:) = matrixIn(:,(offset_y+1):end,:); %shift right section over
@@ -75,7 +76,7 @@ classdef OffsetConductor
 %                     size2 = size( matrixIn( (rem_x+1):end , 1:floor(end/2), :) )
 %                     matrixIn( (rem_x+1):end , 1:floor(end/2), :) = tempVol2; % top left corner
 %                     matrixIn( (rem_x+1):end,  (floor(end/2)+1):end,  :) = tempVol1; %top right corner
-%                     
+                    
                     
                     
                     

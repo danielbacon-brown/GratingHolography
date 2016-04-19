@@ -146,6 +146,8 @@ classdef S4interfaceSquareGeneral
                 system(['~/S4/build/S4 ', GAoptions.dir,scriptFilename]);
             elseif strcmp(GAoptions.hostname,'lotus-bud')
                 system(['~/S4mod/build/S4 ', GAoptions.dir,scriptFilename]);
+            elseif strcmp(GAoptions.hostname,'DESKTOP-5RVEK1H')
+                system(['C:/S4-1.1.1-win32/S4 ', GAoptions.dir,scriptFilename]); %Run script                
             end
             %disp(['importing data: ', GAoptions.dir,dataFilename,'.E'])
             if ~exist([GAoptions.dir,dataFilename,'.E'],'file') %If you can't find the file, ignore it and move on
@@ -261,7 +263,7 @@ classdef S4interfaceSquareGeneral
         
         
         function makeRunScript(S,GAoptions,grating,incidentFieldParams,dataFilename,scriptFilename,layerChromosomes,materialChromosomes)
-            %strat = grating.stratum{1,1};
+            strat = grating.stratum{1,1};
             
             save('lastgrating','grating');
             
@@ -383,46 +385,47 @@ classdef S4interfaceSquareGeneral
             end
 
 
-%TEST
-grating.CX1 = 0            
-grating.CX2 = 0
-grating.CX3 = 0
-grating.CX4 = 0
-grating.CY1 = 0
-grating.CY2 = 0
-grating.CY3 = 0
-grating.CY4 = 0
+% %TEST
+% grating.CX1 = 0            
+% grating.CX2 = 0
+% grating.CX3 = 0
+% grating.CX4 = 0
+% grating.CY1 = 0
+% grating.CY2 = 0
+% grating.CY3 = 0
+% grating.CY4 = 0
 
 
-%Need to define the grating as a polygon
-%(Layer,Material,center,angle,vertices)
-%vertices= [x1,y1,x2,y2,x3,y3 ...
-
-setLayerScript = [setLayerScript, 'S:SetLayerPatternPolygon(''Grating'', ''SU8'',{-0.2667,-.2309},0, {',...
-            sprintf( ' %1.8f, %1.8f, ', 0, 0), ...
-            sprintf( ' %1.8f, %1.8f, ', 0.5334, 0), ...
-            sprintf( ' %1.8f, %1.8f, ', 0.5334, grating.L4 + grating.CY4), ...
-            sprintf( ' %1.8f, %1.8f, ', 0.5334-grating.CX4, grating.L4), ...
-            sprintf( ' %1.8f, %1.8f, ', grating.W1+grating.W2 + grating.CX3, grating.L3), ...
-            sprintf( ' %1.8f, %1.8f, ', grating.W1+grating.W2, grating.L3+grating.CY3), ...
-            sprintf( ' %1.8f, %1.8f, ', grating.W1+grating.W2, grating.L2-grating.CY2), ...
-            sprintf( ' %1.8f, %1.8f, ', grating.W1+grating.W2-grating.CX2, grating.L2), ...
-            sprintf( ' %1.8f, %1.8f, ', grating.CX1, grating.L1), ...
-            sprintf( ' %1.8f, %1.8f, ', 0, grating.L1-grating.CY1), ...
-            '} ) \r\n']
+% %Need to define the grating as a polygon for optimizing helix pattern -
+% found to have minimal change:
+% %(Layer,Material,center,angle,vertices)
+% %vertices= [x1,y1,x2,y2,x3,y3 ...
+% 
+% setLayerScript = [setLayerScript, 'S:SetLayerPatternPolygon(''Grating'', ''SU8'',{-0.2667,-.2309},0, {',...
+%             sprintf( ' %1.8f, %1.8f, ', 0, 0), ...
+%             sprintf( ' %1.8f, %1.8f, ', 0.5334, 0), ...
+%             sprintf( ' %1.8f, %1.8f, ', 0.5334, grating.L4 + grating.CY4), ...
+%             sprintf( ' %1.8f, %1.8f, ', 0.5334-grating.CX4, grating.L4), ...
+%             sprintf( ' %1.8f, %1.8f, ', grating.W1+grating.W2 + grating.CX3, grating.L3), ...
+%             sprintf( ' %1.8f, %1.8f, ', grating.W1+grating.W2, grating.L3+grating.CY3), ...
+%             sprintf( ' %1.8f, %1.8f, ', grating.W1+grating.W2, grating.L2-grating.CY2), ...
+%             sprintf( ' %1.8f, %1.8f, ', grating.W1+grating.W2-grating.CX2, grating.L2), ...
+%             sprintf( ' %1.8f, %1.8f, ', grating.CX1, grating.L1), ...
+%             sprintf( ' %1.8f, %1.8f, ', 0, grating.L1-grating.CY1), ...
+%             '} ) \r\n']
             
             
             %Set incident light parameters
             Es = incidentFieldParams.Esp(2,1);
             Ep = incidentFieldParams.Esp(1,1);
             
-%%%%%%TEST%%%%%%% 
-%Sets to right polarization, but scales according to incident beam power
-Emag = sqrt(abs(Es)^2 + abs(Ep)^2);
-%Es = 3150.2
-%Ep = 293.7
-Es = 3150.2/sqrt(3150.2^2+293.7^2)*Emag;
-Ep = 293.7/sqrt(3150.2^2+293.7^2)*Emag;
+% %%%%%%TEST%%%%%%% 
+% %Sets to right polarization, but scales according to incident beam power
+% Emag = sqrt(abs(Es)^2 + abs(Ep)^2);
+% %Es = 3150.2
+% %Ep = 293.7
+% Es = 3150.2/sqrt(3150.2^2+293.7^2)*Emag;
+% Ep = 293.7/sqrt(3150.2^2+293.7^2)*Emag;
 
             
             %Set the output data filename variable to be used in cs2

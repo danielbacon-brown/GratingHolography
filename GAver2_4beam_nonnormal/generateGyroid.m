@@ -1,7 +1,8 @@
-function gyroidStruct = generateGyroid()
+function gyroidStruct = generateGyroid(cells,fill)
 
 %Generate gyroid structure:
-options.cells = [25,25,25];
+%options.cells = [25,25,25];
+options.cells = cells;
 
 %struct = zeros(options.cells); 
 
@@ -15,9 +16,10 @@ linW = linspace(0,2*pi,options.cells(3));
 
 gyroidI = sin(gridU).*cos(gridV) + sin(gridV).*cos(gridW) + sin(gridW).*cos(gridU);
 
-targetfill = 0.25;
+%targetfill = 0.50;
+targetfill = fill;
 threshold = fixfill(gyroidI, 256, targetfill);
-gyroidStruct = gyroidI > threshold;
+gyroidStruct = gyroidI < threshold;
 
 %TEST
 figure

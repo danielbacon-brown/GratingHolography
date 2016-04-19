@@ -10,15 +10,15 @@ classdef Material
     
     
     methods
-        function M = Material( materialName, constRI, RIMin, RIMax, chromNRI)
-            if real(constRI) < 0 %Variable RI
+        function M = Material( materialName, inconstRI, RIMin, RIMax, chromNRI)
+            if real(inconstRI) < 0 %Variable RI
                 M.RIMin = RIMin;
                 M.RIMax = RIMax;
                 M.chromNRI = chromNRI;
                 M.materialName = materialName;
             else %constant thickness
                 M.materialName = materialName;
-                M.constRI = constRI;
+                M.constRI = inconstRI;
                 M.chromNRI = 0;
             end
             

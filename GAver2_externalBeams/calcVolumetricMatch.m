@@ -18,14 +18,14 @@ fill = 1 - sum(sum(sum(targetStructure))) / (size(targetStructure,1)*size(target
 %simStruct = intensityDist<threshold;  %1 if intensity below threshold (void), 0 if above (SU8)
 simStruct = ~exposedStruct; 
 
-%f_void = sum(sum(sum( targetStructure & simStruct )))/(size(targetStructure,1)*size(targetStructure,1)*size(targetStructure,3))/fill; %Fraction of points that are contained by both
-%f_filled = sum(sum(sum( ~targetStructure & ~simStruct )))/(size(targetStructure,1)*size(targetStructure,1)*size(targetStructure,3))/fill; %Fraction of poitns contained by neither
+f_void = sum(sum(sum( targetStructure & simStruct )))/(size(targetStructure,1)*size(targetStructure,1)*size(targetStructure,3)); %Fraction of points that are contained by both
+f_filled = sum(sum(sum( ~targetStructure & ~simStruct )))/(size(targetStructure,1)*size(targetStructure,1)*size(targetStructure,3)); %Fraction of poitns contained by neither
 %Add fill@fill for target structure
-f1 = -1*sum(sum(sum( targetStructure & simStruct )))/(size(targetStructure,1)*size(targetStructure,1)*size(targetStructure,3))/fill; %Fraction of poitns contained by neither
+%f1 = -1*sum(sum(sum( targetStructure & simStruct )))/(size(targetStructure,1)*size(targetStructure,1)*size(targetStructure,3))/fill; %Fraction of poitns contained by neither
 %Add fill@void for exclusion structure
 %f2 = sum(sum(sum( ~exclusionStructure & simStruct )))/(size(targetStructure,1)*size(targetStructure,1)*size(targetStructure,3))/fill; %Fraction of poitns contained by neither
 
-fitness = f1;
+fitness = -1*(f_void+ f_filled);
 
 % %TEST
 % figure

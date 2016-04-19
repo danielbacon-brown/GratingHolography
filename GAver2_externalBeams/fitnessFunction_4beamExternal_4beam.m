@@ -1,4 +1,4 @@
-function fitness = fitnessFunction_4beamExternal(GAoptions,chromosome)
+function fitness = fitnessFunction_4beamExternal_4beam(GAoptions,chromosome)
 %Designed to be a fairly general fitness function
 %Use in a separate file allows the chromosome to be measured directly
 
@@ -27,34 +27,37 @@ function fitness = fitnessFunction_4beamExternal(GAoptions,chromosome)
 %     GAoptions.fillHandler.getChromosomeSize() ...
 %     ]);
 
-
-disp('m1')
+%disp('m1')
 
 %Assumes using 4beam geometry (first beam is central, replace s with x and p with y)
-[EsChromosome,  EpChromosome, phaseChromosome, incidentAngleChromosome,  offsetChromosome, fillChromosome ] = splitChromosome(chromosome,[ ...
-    8*4,  8*4,  8*4, 8,  GAoptions.offsetConductor.getChromosomeSize(), GAoptions.fillHandler.getChromosomeSize() ]) ;
+[EsChromosome,  EpChromosome, EpPhaseChromosome, phaseChromosome, ...incidentAngleChromosome,  ...offsetChromosome, 
+    fillChromosome ] = splitChromosome(chromosome,[ ...
+    8*4,  8*4,  8*4, 8*4, ...8,  ...GAoptions.offsetConductor.getChromosomeSize(), 
+    GAoptions.fillHandler.getChromosomeSize() ]) ;
 
 [Ex1,Es2,Es3,Es4] = convertChrom_gc(EsChromosome, [8,8,8,8] );
 [Ey1,Ep2,Ep3,Ep4] = convertChrom_gc(EpChromosome, [8,8,8,8] );
+[EpPhase1,EpPhase2,EpPhase3,EpPhase4] = convertChrom_gc(EpPhaseChromosome, [8,8,8,8] ); %phase shift between Es and Ep polarizations (gives elliptical)
 [phase1,phase2,phase3,phase4] = convertChrom_gc(phaseChromosome, [8,8,8,8] );
 phase1=phase1*2*pi; phase2=phase2*2*pi; phase3=phase3*2*pi; phase4=phase4*2*pi;
-incidentAngle = convertChrom_gc(incidentAngleChromosome, 8)*(GAoptions.incidentAngleMax-GAoptions.incidentAngleMin) + GAoptions.incidentAngleMin;
+%incidentAngle = convertChrom_gc(incidentAngleChromosome, 8)*(GAoptions.incidentAngleMax-GAoptions.incidentAngleMin) + GAoptions.incidentAngleMin;
+incidentAngle = GAoptions.incidentAngleConst;
 
 %TEST
 %incidentAngle = pi/4
 
 n_PR = 1.58;
-lambda = 0.532/n_PR; %um
+lambda = 0.532/GAoptions.n_PR; %um
 period = 2*lambda/(sqrt(3)*sin(incidentAngle));
 %period = 2*lambda/(2*sin(incidentAngle))
 d = lambda/(2*sin(incidentAngle/2)^2);
 
-periodx = period;
-periody = period*sqrt(3)/2;
-periodz = d;
-% periodx = period*sqrt(3)/2
-% periody = period
-% periodz = d
+% periodx = period;
+% periody = period*sqrt(3)/2;
+% periodz = d;
+periodx = period*sqrt(3)/2
+periody = period
+periodz = d
 
 %Nx = 30
 %Ny = floor(Nx*periody/periodx)
@@ -75,12 +78,12 @@ R_2 = [cos(theta_2),-sin(theta_2),0;
     sin(theta_2),cos(theta_2),0;
     0,0,1];
 %R_z rotates between 
-R_z = [1,0,0; %Rotates along x-axis
-    0,cos(incidentAngle),sin(incidentAngle);
-    0,-sin(incidentAngle),cos(incidentAngle)];
-% R_z = [cos(incidentAngle),0,sin(incidentAngle); %Rotates along y-axis
-%     0,1,0;
-%     -sin(incidentAngle),0,cos(incidentAngle)];
+% R_z = [1,0,0; %Rotates along x-axis
+%     0,cos(incidentAngle),sin(incidentAngle);
+%     0,-sin(incidentAngle),cos(incidentAngle)];
+R_z = [cos(incidentAngle),0,sin(incidentAngle); %Rotates along y-axis
+    0,1,0;
+    -sin(incidentAngle),0,cos(incidentAngle)];
 
 k_1 = [0;0;-1]*2*pi/ lambda; %Vertical
 %k_2 = [0;-sin(incidentAngle);-cos(incidentAngle)]*2*pi / lambda
@@ -91,11 +94,12 @@ k = [k_1,k_2,k_3,k_4];
 
 
 %Calc electric field vectors:
+%Start off with values as if each beam was headed vertically.  Es->Ex and Ep->Ey
 %Beam 2 is propagating in -y direction
-E_1 = [Ex1;Ey1;0];
-E_2_sp = [Es2;Ep2*exp(1i*phase2);0];
-E_3_sp = [Es3;Ep3*exp(1i*phase3);0];
-E_4_sp = [Es4;Ep4*exp(1i*phase4);0];
+E_1 = [Ex1;Ey1*EpPhase1;0]*exp(1i*phase1);
+E_2_sp = [Es2;Ep2*exp(1i*EpPhase2);0]*exp(1i*phase2);
+E_3_sp = [Es3;Ep3*exp(1i*EpPhase3);0]*exp(1i*phase3);
+E_4_sp = [Es4;Ep4*exp(1i*EpPhase4);0]*exp(1i*phase4);
 
 %NOW NEED TO ROTATE FIELDS FROM VERTICAL TO ANGLED:
 E_2 = R_z*E_2_sp;
@@ -104,11 +108,11 @@ E_4 = R_2*R_z*E_4_sp;
 
 E = [E_1,E_2,E_3,E_4];
 
-disp('m2')
+%disp('m2')
 
 intensityDist = icalc_mod(E,k,periodx,periody,periodz,Nx,Ny,Nz,[0,0,0],1,1);
     
-disp('m3')
+    %disp('m3')
 
 
 % 
@@ -162,22 +166,21 @@ disp('m3')
 % end
 
 
-%Do offset of interference pattern
-intensityDist = GAoptions.offsetConductor.doOffset(intensityDist, offsetChromosome); %W/(unitarea)
+% %Do offset of interference pattern
+% intensityDist = GAoptions.offsetConductor.doOffset(intensityDist, offsetChromosome); %W/(unitarea)
 %Check for about 0 intensity difference
 if (max(max(max(intensityDist))) - min(min(min(intensityDist))) ) / min(min(min(intensityDist))) < 0.01 %if approx no variation in intensity
     fitness = 0;
     return 
 end
 
-disp('m4')
+%disp('m4')
 
 %Calculate Fitness
 if strcmp(GAoptions.fitnessType, 'structure')
     
     %Calc structure
     [exposedStruct,fillfrac,threshold] = GAoptions.fillHandler.applyFill(fillChromosome,intensityDist);
-    
     if GAoptions.useExclusion == 1
         %[fitness,threshold] = calcVolumetricMatchEdgeExclusion(GAoptions.targetStructure, GAoptions.exclusionStructure,GAoptions.edgeExclusionStructure, intensityDist,GAoptions.fill);
         if GAoptions.useEdgeExclusion
@@ -188,6 +191,7 @@ if strcmp(GAoptions.fitnessType, 'structure')
     else
        fitness = calcVolumetricMatch(GAoptions.targetStructure, exposedStruct); 
     end
+    %disp('m5')
     
 elseif strcmp(GAoptions.fitnessType, 'fdtd')
     
@@ -355,34 +359,34 @@ if GAoptions.runSingle == 1 %Plot simulated structure
 %         zlim([2 size(intensityDist,3)+1])
         
         if ~strcmp(strtrim(GAoptions.hostname),'Daniel-netbook')
-            %Do Lumerical simulation
-            
-            %Make hexagonal repeat of structure:
-            lx = size(intensityDist,1);
-            left = intensityDist(1:floor(lx/2),:,:);
-            right = intensityDist((floor(lx/2)+1):end,:,:);
-            top = cat(1,right,left);
-            intensityDistComb = cat(2,intensityDist,top);
-            
-            writeLumericalRunFileSquare(GAoptions, intensityDistComb>threshold);
-            system(['fdtd-solutions -run ', GAoptions.dir, GAoptions.LumRunScript]);
-            while(~exist([GAoptions.dir,GAoptions.currentLumResultsFile],'file'))
-                pause(0.1)
-            end
-            LumResults = load([GAoptions.dir,GAoptions.currentLumResultsFile]);
-            transmissionRight = LumResults.transmission_right/sqrt(2);
-            transmissionLeft = LumResults.transmission_left/sqrt(2);
-            reflectionRight = LumResults.reflection_right*-1/sqrt(2);
-            reflectionLeft = LumResults.reflection_left*-1/sqrt(2);
-            
-            %Plot transmission and reflection of RCP and LCP waves
-            figure
-            frequencies = linspace(2.99e8/GAoptions.fdtd.maxMeasWL, 2.99e8/GAoptions.fdtd.minMeasWL, GAoptions.fdtd.numMeasWL); %Linear in frequency space
-            %wavelengths = linspace(GAoptions.fdtd.minMeasWL,GAoptions.fdtd.maxMeasWL,GAoptions.fdtd.numMeasWL);
-            wavelengths = 2.99e8./frequencies; %Convert to wavelength
-            plot(wavelengths,transmissionRight,'r',wavelengths,transmissionLeft,'b');
-            figure
-            plot(wavelengths,reflectionRight,'r',wavelengths,reflectionLeft,'b');
+%             %Do Lumerical simulation
+%             
+%             %Make hexagonal repeat of structure:
+%             lx = size(intensityDist,1);
+%             left = intensityDist(1:floor(lx/2),:,:);
+%             right = intensityDist((floor(lx/2)+1):end,:,:);
+%             top = cat(1,right,left);
+%             intensityDistComb = cat(2,intensityDist,top);
+%             
+%             writeLumericalRunFileSquare(GAoptions, intensityDistComb>threshold);
+%             system(['fdtd-solutions -run ', GAoptions.dir, GAoptions.LumRunScript]);
+%             while(~exist([GAoptions.dir,GAoptions.currentLumResultsFile],'file'))
+%                 pause(0.1)
+%             end
+%             LumResults = load([GAoptions.dir,GAoptions.currentLumResultsFile]);
+%             transmissionRight = LumResults.transmission_right/sqrt(2);
+%             transmissionLeft = LumResults.transmission_left/sqrt(2);
+%             reflectionRight = LumResults.reflection_right*-1/sqrt(2);
+%             reflectionLeft = LumResults.reflection_left*-1/sqrt(2);
+%             
+%             %Plot transmission and reflection of RCP and LCP waves
+%             figure
+%             frequencies = linspace(2.99e8/GAoptions.fdtd.maxMeasWL, 2.99e8/GAoptions.fdtd.minMeasWL, GAoptions.fdtd.numMeasWL); %Linear in frequency space
+%             %wavelengths = linspace(GAoptions.fdtd.minMeasWL,GAoptions.fdtd.maxMeasWL,GAoptions.fdtd.numMeasWL);
+%             wavelengths = 2.99e8./frequencies; %Convert to wavelength
+%             plot(wavelengths,transmissionRight,'r',wavelengths,transmissionLeft,'b');
+%             figure
+%             plot(wavelengths,reflectionRight,'r',wavelengths,reflectionLeft,'b');
         
         end
         

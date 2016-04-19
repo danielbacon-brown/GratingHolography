@@ -19,6 +19,7 @@ classdef FillFactorHandler
                 F.chromNfill = options.chromNfill;
             else %constant fill
                 F.constFill = options.constFill;
+                disp(['constant fill: ' , num2str(options.constFill) ])
                 F.chromNfill = 0;
             end
             F.nbins = 256;
